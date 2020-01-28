@@ -19,3 +19,10 @@ Made using ReactNative, Firebase, ViroMedia(AR Library), TensorFlow Lite
   <img src="media/Screenshot_20200129-002506_InteriorDesign.jpg" width="256" height="455">
 </p>
 
+
+
+<p align="center">
+  <img src="media/Screenshot_20200129-002446_InteriorDesign.jpg" width="256" height="455">
+  <img src="media/WhatsApp Image 2019-12-30 at 12.37.11.jpg" width="256" height="455">
+  <img src="media/Screenshot_20200129-002506_InteriorDesign.jpg" width="256" height="455">
+</p>
