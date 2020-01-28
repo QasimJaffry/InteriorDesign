@@ -6,4 +6,4 @@ Augmented Reality experience of 3D furniture objects.
 Made using ReactNative, Firebase, ViroMedia(AR Library), TensorFlow Lite
 
 
-<img src="media/Screenshot_1572864115.png" height="24">
+<img src="media/Screenshot_1572864115.png" height="44" width="44">
