@@ -8,7 +8,7 @@ Made using ReactNative, Firebase, ViroMedia(AR Library), TensorFlow Lite
 
 
 <p align="center">
-  <img src="media/Screenshot_1572864115.png" width="250" height="150">
+  <img src="media/Screenshot_1572864115.png" width="250" height="350">
   <img src="media/Screenshot_20200129-002406_InteriorDesign.jpg" width="100" height="100">
   <img src="media/Screenshot_1572864129.png" width="100" height="100">
 </p>
