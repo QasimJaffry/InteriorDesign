@@ -1,7 +1,0 @@
-happy
-relaxed
-sad
-angry
-stressed
-disgusted
-surprised
