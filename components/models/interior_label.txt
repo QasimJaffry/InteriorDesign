@@ -1,0 +1,7 @@
+Sofa_bed
+Table
+Nightstand
+Door
+Couch
+Chair
+Bed
