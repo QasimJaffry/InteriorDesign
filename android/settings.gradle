@@ -1,0 +1,69 @@
+pluginManagement {
+    includeBuild(new File(["node", "--print", "require.resolve('@react-native/gradle-plugin/package.json', { paths: [require.resolve('react-native/package.json')] })"].execute(null, rootDir).text.trim()).getParentFile().toString())
+}
+plugins { id("com.facebook.react.settings") }
+
+extensions.configure(com.facebook.react.ReactSettingsExtension) { ex ->
+  if (System.getenv('EXPO_USE_COMMUNITY_AUTOLINKING') == '1') {
+    ex.autolinkLibrariesFromCommand()
+  } else {
+    def command = [
+      'node',
+      '--no-warnings',
+      '--eval',
+      'require(require.resolve(\'expo-modules-autolinking\', { paths: [require.resolve(\'expo/package.json\')] }))(process.argv.slice(1))',
+      'react-native-config',
+      '--json',
+      '--platform',
+      'android'
+    ].toList()
+    ex.autolinkLibrariesFromCommand(command)
+  }
+}
+
+rootProject.name = 'INTERIO'
+
+dependencyResolutionManagement {
+  versionCatalogs {
+    reactAndroidLibs {
+      from(files(new File(["node", "--print", "require.resolve('react-native/package.json')"].execute(null, rootDir).text.trim(), "../gradle/libs.versions.toml")))
+    }
+  }
+}
+
+apply from: new File(["node", "--print", "require.resolve('expo/package.json')"].execute(null, rootDir).text.trim(), "../scripts/autolinking.gradle");
+useExpoModules()
+
+include ':app'
+includeBuild(new File(["node", "--print", "require.resolve('@react-native/gradle-plugin/package.json', { paths: [require.resolve('react-native/package.json')] })"].execute(null, rootDir).text.trim()).getParentFile())
+
+include ':react_viro', ':arcore_client', ':gvr_common', ':viro_renderer'
+project(':arcore_client').projectDir = new File('../node_modules/@reactvision/react-viro/android/arcore_client')
+project(':gvr_common').projectDir = new File('../node_modules/@reactvision/react-viro/android/gvr_common')
+project(':viro_renderer').projectDir = new File('../node_modules/@reactvision/react-viro/android/viro_renderer')
+project(':react_viro').projectDir = new File('../node_modules/@reactvision/react-viro/android/react_viro')
+    
+include ':react_viro', ':arcore_client', ':gvr_common', ':viro_renderer'
+project(':arcore_client').projectDir = new File('../node_modules/@reactvision/react-viro/android/arcore_client')
+project(':gvr_common').projectDir = new File('../node_modules/@reactvision/react-viro/android/gvr_common')
+project(':viro_renderer').projectDir = new File('../node_modules/@reactvision/react-viro/android/viro_renderer')
+project(':react_viro').projectDir = new File('../node_modules/@reactvision/react-viro/android/react_viro')
+    
+include ':react_viro', ':arcore_client', ':gvr_common', ':viro_renderer'
+project(':arcore_client').projectDir = new File('../node_modules/@reactvision/react-viro/android/arcore_client')
+project(':gvr_common').projectDir = new File('../node_modules/@reactvision/react-viro/android/gvr_common')
+project(':viro_renderer').projectDir = new File('../node_modules/@reactvision/react-viro/android/viro_renderer')
+project(':react_viro').projectDir = new File('../node_modules/@reactvision/react-viro/android/react_viro')
+    
+include ':react_viro', ':arcore_client', ':gvr_common', ':viro_renderer'
+project(':arcore_client').projectDir = new File('../node_modules/@reactvision/react-viro/android/arcore_client')
+project(':gvr_common').projectDir = new File('../node_modules/@reactvision/react-viro/android/gvr_common')
+project(':viro_renderer').projectDir = new File('../node_modules/@reactvision/react-viro/android/viro_renderer')
+project(':react_viro').projectDir = new File('../node_modules/@reactvision/react-viro/android/react_viro')
+    
+include ':react_viro', ':arcore_client', ':gvr_common', ':viro_renderer'
+project(':arcore_client').projectDir = new File('../node_modules/@reactvision/react-viro/android/arcore_client')
+project(':gvr_common').projectDir = new File('../node_modules/@reactvision/react-viro/android/gvr_common')
+project(':viro_renderer').projectDir = new File('../node_modules/@reactvision/react-viro/android/viro_renderer')
+project(':react_viro').projectDir = new File('../node_modules/@reactvision/react-viro/android/react_viro')
+    

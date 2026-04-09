@@ -1,59 +1,107 @@
-import React from 'react';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { Link, Tabs } from 'expo-router';
-import { Pressable } from 'react-native';
+import FontAwesome from "@expo/vector-icons/FontAwesome";
+import { Redirect, Tabs } from "expo-router";
+import React from "react";
+import { ActivityIndicator, StyleSheet, View } from "react-native";
 
-import Colors from '@/constants/Colors';
-import { useColorScheme } from '@/components/useColorScheme';
-import { useClientOnlyValue } from '@/components/useClientOnlyValue';
+import { FavouritesSync } from "@/components/FavouritesSync";
+import { useAuthSession } from "@/contexts/AuthContext";
+import Colors from "@/constants/Colors";
+import { useColorScheme } from "@/components/useColorScheme";
+import { useClientOnlyValue } from "@/components/useClientOnlyValue";
 
-// You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
 function TabBarIcon(props: {
-  name: React.ComponentProps<typeof FontAwesome>['name'];
+  name: React.ComponentProps<typeof FontAwesome>["name"];
   color: string;
 }) {
-  return <FontAwesome size={28} style={{ marginBottom: -3 }} {...props} />;
+  return <FontAwesome size={24} style={{ marginBottom: -2 }} {...props} />;
 }
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const { user, initializing } = useAuthSession();
+
+  if (initializing) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color="#c45c5c" />
+      </View>
+    );
+  }
+
+  if (!user) {
+    return <Redirect href="/login" />;
+  }
 
   return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        // Disable the static render of the header on web
-        // to prevent a hydration error in React Navigation v6.
-        headerShown: useClientOnlyValue(false, true),
-      }}>
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Tab One',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
-          headerRight: () => (
-            <Link href="/modal" asChild>
-              <Pressable>
-                {({ pressed }) => (
-                  <FontAwesome
-                    name="info-circle"
-                    size={25}
-                    color={Colors[colorScheme ?? 'light'].text}
-                    style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}
-                  />
-                )}
-              </Pressable>
-            </Link>
-          ),
+    <>
+      <FavouritesSync />
+      <Tabs
+        screenOptions={{
+          tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
+          tabBarStyle: {
+            backgroundColor: "#121218",
+            borderTopColor: "#2e2e38",
+          },
+          headerStyle: { backgroundColor: "#121218" },
+          headerTintColor: "#eef2f6",
+          headerShown: useClientOnlyValue(false, true),
         }}
-      />
-      <Tabs.Screen
-        name="two"
-        options={{
-          title: 'Tab Two',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
-        }}
-      />
-    </Tabs>
+      >
+        <Tabs.Screen
+          name="index"
+          options={{
+            title: "Home",
+            tabBarIcon: ({ color }) => (
+              <TabBarIcon name="home" color={color} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="camera"
+          options={{
+            title: "Scan",
+            tabBarIcon: ({ color }) => (
+              <TabBarIcon name="camera" color={color} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="ar"
+          options={{
+            title: "AR",
+            tabBarIcon: ({ color }) => (
+              <TabBarIcon name="cube" color={color} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="saved"
+          options={{
+            title: "Saved",
+            tabBarIcon: ({ color }) => (
+              <TabBarIcon name="bookmark" color={color} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="profile"
+          options={{
+            title: "Profile",
+            tabBarIcon: ({ color }) => (
+              <TabBarIcon name="user" color={color} />
+            ),
+          }}
+        />
+      </Tabs>
+    </>
   );
 }
+
+const styles = StyleSheet.create({
+  center: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#0f0f12",
+  },
+});

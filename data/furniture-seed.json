@@ -1,0 +1,79 @@
+[
+  {
+    "id": "pm-armchair",
+    "name": "Armchair (interview set)",
+    "type": "chair",
+    "imageUrl": "https://raw.githubusercontent.com/ToxSam/cc0-models-Polygonal-Mind/main/projects/avatar-show/Arm_Chair_thumbnail.png",
+    "modelUrl": "https://raw.githubusercontent.com/ToxSam/cc0-models-Polygonal-Mind/main/projects/avatar-show/Arm_Chair.glb"
+  },
+  {
+    "id": "pm-long-chair",
+    "name": "Lounge chair",
+    "type": "chair",
+    "imageUrl": "https://raw.githubusercontent.com/ToxSam/cc0-models-Polygonal-Mind/main/projects/avatar-show/Long_Chair_thumbnail.png",
+    "modelUrl": "https://raw.githubusercontent.com/ToxSam/cc0-models-Polygonal-Mind/main/projects/avatar-show/Long_Chair.glb"
+  },
+  {
+    "id": "pm-sofa",
+    "name": "Sofa",
+    "type": "sofa",
+    "imageUrl": "https://raw.githubusercontent.com/ToxSam/cc0-models-Polygonal-Mind/main/projects/avatar-show/Sofa_thumbnail.png",
+    "modelUrl": "https://raw.githubusercontent.com/ToxSam/cc0-models-Polygonal-Mind/main/projects/avatar-show/Sofa.glb"
+  },
+  {
+    "id": "pm-table",
+    "name": "Coffee table",
+    "type": "table",
+    "imageUrl": "https://raw.githubusercontent.com/ToxSam/cc0-models-Polygonal-Mind/main/projects/avatar-show/Table_thumbnail.png",
+    "modelUrl": "https://raw.githubusercontent.com/ToxSam/cc0-models-Polygonal-Mind/main/projects/avatar-show/Table.glb"
+  },
+  {
+    "id": "pm-table-round",
+    "name": "Round side table",
+    "type": "table",
+    "imageUrl": "https://raw.githubusercontent.com/ToxSam/cc0-models-Polygonal-Mind/main/projects/avatar-show/Table_Round_01_thumbnail.png",
+    "modelUrl": "https://raw.githubusercontent.com/ToxSam/cc0-models-Polygonal-Mind/main/projects/avatar-show/Table_Round_01.glb"
+  },
+  {
+    "id": "pm-lamp-stand",
+    "name": "Floor lamp",
+    "type": "lamp",
+    "imageUrl": "https://raw.githubusercontent.com/ToxSam/cc0-models-Polygonal-Mind/main/projects/avatar-show/Lamp_Stand_thumbnail.png",
+    "modelUrl": "https://raw.githubusercontent.com/ToxSam/cc0-models-Polygonal-Mind/main/projects/avatar-show/Lamp_Stand.glb"
+  },
+  {
+    "id": "pm-studio-lamp",
+    "name": "Studio spotlight",
+    "type": "lamp",
+    "imageUrl": "https://raw.githubusercontent.com/ToxSam/cc0-models-Polygonal-Mind/main/projects/avatar-show/Studio_Lamp_thumbnail.png",
+    "modelUrl": "https://raw.githubusercontent.com/ToxSam/cc0-models-Polygonal-Mind/main/projects/avatar-show/Studio_Lamp.glb"
+  },
+  {
+    "id": "pm-shelf",
+    "name": "Wooden shelf",
+    "type": "shelf",
+    "imageUrl": "https://raw.githubusercontent.com/ToxSam/cc0-models-Polygonal-Mind/main/projects/ca-world/Shelf_01_a_thumbnail.png",
+    "modelUrl": "https://raw.githubusercontent.com/ToxSam/cc0-models-Polygonal-Mind/main/projects/ca-world/Shelf_01_a.glb"
+  },
+  {
+    "id": "pm-retro-screen",
+    "name": "Retro display (TV / monitor stand-in)",
+    "type": "media",
+    "imageUrl": "https://raw.githubusercontent.com/ToxSam/cc0-models-Polygonal-Mind/main/projects/chromatic-chaos/ComputerScreen_Retro_thumbnail.png",
+    "modelUrl": "https://raw.githubusercontent.com/ToxSam/cc0-models-Polygonal-Mind/main/projects/chromatic-chaos/ComputerScreen_Retro.glb"
+  },
+  {
+    "id": "pm-carpet",
+    "name": "Area rug",
+    "type": "decor",
+    "imageUrl": "https://raw.githubusercontent.com/ToxSam/cc0-models-Polygonal-Mind/main/projects/avatar-show/Carpet_thumbnail.png",
+    "modelUrl": "https://raw.githubusercontent.com/ToxSam/cc0-models-Polygonal-Mind/main/projects/avatar-show/Carpet.glb"
+  },
+  {
+    "id": "pm-seat-bench",
+    "name": "Bench seat",
+    "type": "bench",
+    "imageUrl": "https://raw.githubusercontent.com/ToxSam/cc0-models-Polygonal-Mind/main/projects/avatar-show/Seat_thumbnail.png",
+    "modelUrl": "https://raw.githubusercontent.com/ToxSam/cc0-models-Polygonal-Mind/main/projects/avatar-show/Seat.glb"
+  }
+]
