@@ -1,3 +1,4 @@
+// @ts-nocheck — ViroReact’s published typings omit gesture props (onTap, onDrag, etc.) present at runtime.
 import {
   Viro3DObject,
   ViroARScene,
@@ -126,16 +127,16 @@ function FurniturePiece({
         type="GLB"
         scale={[1, 1, 1]}
         position={[0, 0, 0]}
-        onError={(e) =>
+        onError={(e) => {
+          const raw = e.nativeEvent?.error;
+          const msg =
+            raw instanceof Error ? raw.message : String(raw ?? model.modelUrl);
           Toast.show({
             type: "error",
             text1: "Model failed to load",
-            text2: String(
-              (e as { nativeEvent?: { error?: string } }).nativeEvent?.error ??
-                model.modelUrl,
-            ),
-          })
-        }
+            text2: msg,
+          });
+        }}
       />
     </ViroNode>
   );
