@@ -15,6 +15,7 @@ import Toast from "react-native-toast-message";
 import { bestDetectionFromLabels } from "@/lib/mlLabelMap";
 import { useScanResult } from "@/hooks/useScanResult";
 import { useAppStore } from "@/store/appStore";
+import { fontFamily, palette, radius, space } from "@/constants/theme";
 
 export function CameraNative() {
   const [permission, requestPermission] = useCameraPermissions();
@@ -38,7 +39,6 @@ export function CameraNative() {
     try {
       const photo = await cameraRef.current.takePictureAsync({
         quality: 0.4,
-        skipMetadata: true,
       });
       photoUri = photo?.uri ?? null;
       if (!photoUri) {
@@ -83,7 +83,7 @@ export function CameraNative() {
   if (!permission) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color="#c45c5c" />
+        <ActivityIndicator size="large" color={palette.sage} />
       </View>
     );
   }
@@ -91,9 +91,13 @@ export function CameraNative() {
   if (!permission.granted) {
     return (
       <View style={styles.center}>
-        <Text style={styles.msg}>Camera access is required to scan.</Text>
+        <Text style={styles.permissionTitle}>Camera access</Text>
+        <Text style={styles.msg}>
+          We use the camera to detect furniture in frame and suggest matching
+          pieces. Nothing is uploaded without your action.
+        </Text>
         <Pressable style={styles.primary} onPress={requestPermission}>
-          <Text style={styles.primaryText}>Grant permission</Text>
+          <Text style={styles.primaryText}>Continue</Text>
         </Pressable>
       </View>
     );
@@ -102,8 +106,8 @@ export function CameraNative() {
   if (!detector?.isLoaded()) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color="#c45c5c" />
-        <Text style={styles.hint}>Loading ML Kit model…</Text>
+        <ActivityIndicator size="large" color={palette.sage} />
+        <Text style={styles.hint}>Loading on-device model…</Text>
       </View>
     );
   }
@@ -117,7 +121,7 @@ export function CameraNative() {
         <View style={styles.badge}>
           {scanning ? (
             <>
-              <ActivityIndicator size="small" color="#9df" />
+              <ActivityIndicator size="small" color={palette.link} />
               <Text style={styles.muted}>Detecting…</Text>
             </>
           ) : lastResult ? (
@@ -131,7 +135,9 @@ export function CameraNative() {
           ) : (
             <>
               <Text style={styles.badgeTitle}>Ready</Text>
-              <Text style={styles.muted}>Point at furniture and tap Scan</Text>
+              <Text style={styles.muted}>
+                Frame a chair, table, or sofa — then tap scan
+              </Text>
             </>
           )}
         </View>
@@ -152,7 +158,7 @@ export function CameraNative() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#000",
+    backgroundColor: palette.black,
   },
   camera: {
     flex: 1,
@@ -160,80 +166,100 @@ const styles = StyleSheet.create({
   hud: {
     ...StyleSheet.absoluteFillObject,
     justifyContent: "space-between",
-    padding: 16,
+    padding: space.md,
   },
   badge: {
     alignSelf: "center",
-    marginTop: 24,
-    backgroundColor: "rgba(0,0,0,0.55)",
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 12,
-    minWidth: 220,
+    marginTop: space.xl,
+    backgroundColor: palette.overlay,
+    paddingHorizontal: space.lg,
+    paddingVertical: space.md,
+    borderRadius: radius.lg,
+    minWidth: 240,
     alignItems: "center",
     gap: 4,
+    borderWidth: 1,
+    borderColor: palette.border,
   },
   badgeTitle: {
-    color: "#aab",
-    fontSize: 12,
+    fontFamily: fontFamily.sansSemiBold,
+    color: palette.textMuted,
+    fontSize: 11,
+    letterSpacing: 1.5,
     textTransform: "uppercase",
     marginBottom: 4,
   },
   badgeType: {
-    color: "#fff",
-    fontSize: 22,
-    fontWeight: "700",
+    fontFamily: fontFamily.displaySemibold,
+    color: palette.white,
+    fontSize: 24,
   },
   badgeConf: {
-    color: "#9df",
-    fontSize: 15,
+    fontFamily: fontFamily.sansMedium,
+    color: palette.link,
+    fontSize: 14,
     marginTop: 4,
   },
   muted: {
-    color: "#889",
-    fontSize: 15,
+    fontFamily: fontFamily.sans,
+    color: palette.textSecondary,
+    fontSize: 14,
     textAlign: "center",
+    lineHeight: 20,
   },
   capture: {
-    backgroundColor: "#c45c5c",
-    paddingVertical: 16,
-    borderRadius: 12,
+    backgroundColor: palette.sage,
+    paddingVertical: 18,
+    borderRadius: radius.lg,
     alignItems: "center",
   },
   captureText: {
-    color: "#fff",
+    fontFamily: fontFamily.sansSemiBold,
+    color: palette.bg,
     fontSize: 16,
-    fontWeight: "600",
   },
   disabled: {
-    opacity: 0.6,
+    opacity: 0.55,
   },
   center: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    padding: 24,
-    backgroundColor: "#0f0f12",
+    padding: space.lg,
+    backgroundColor: palette.bg,
+  },
+  permissionTitle: {
+    fontFamily: fontFamily.displaySemibold,
+    fontSize: 26,
+    color: palette.text,
+    marginBottom: space.md,
+    textAlign: "center",
   },
   msg: {
-    color: "#ccd",
+    fontFamily: fontFamily.sans,
+    color: palette.textSecondary,
     fontSize: 16,
     textAlign: "center",
     lineHeight: 24,
+    marginBottom: space.lg,
+    maxWidth: 320,
   },
   hint: {
-    color: "#889",
-    marginTop: 12,
+    fontFamily: fontFamily.sans,
+    color: palette.textMuted,
+    marginTop: space.md,
+    fontSize: 14,
   },
   primary: {
-    marginTop: 16,
-    backgroundColor: "#c45c5c",
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 10,
+    marginTop: space.sm,
+    backgroundColor: palette.sage,
+    paddingHorizontal: space.lg,
+    paddingVertical: 16,
+    borderRadius: radius.md,
   },
   primaryText: {
-    color: "#fff",
-    fontWeight: "600",
+    fontFamily: fontFamily.sansSemiBold,
+    color: palette.bg,
+    fontSize: 16,
   },
 });

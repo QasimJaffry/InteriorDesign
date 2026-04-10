@@ -12,6 +12,7 @@ import {
 import Toast from "react-native-toast-message";
 
 import { useAuth } from "@/hooks/useAuth";
+import { fontFamily, palette, radius, space } from "@/constants/theme";
 
 export default function LoginScreen() {
   const { signIn, busy } = useAuth();
@@ -36,13 +37,16 @@ export default function LoginScreen() {
       style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
+      <View style={styles.accentLine} />
       <View style={styles.inner}>
-        <Text style={styles.title}>INTERIO</Text>
-        <Text style={styles.sub}>Welcome back</Text>
+        <Text style={styles.kicker}>Spatial interior studio</Text>
+        <Text style={styles.title}>Interio</Text>
+        <Text style={styles.sub}>Welcome back — pick up where you left off.</Text>
+
         <TextInput
           style={styles.input}
           placeholder="Email"
-          placeholderTextColor="#667"
+          placeholderTextColor={palette.textMuted}
           autoCapitalize="none"
           keyboardType="email-address"
           value={email}
@@ -51,7 +55,7 @@ export default function LoginScreen() {
         <TextInput
           style={styles.input}
           placeholder="Password"
-          placeholderTextColor="#667"
+          placeholderTextColor={palette.textMuted}
           secureTextEntry
           value={password}
           onChangeText={setPassword}
@@ -71,7 +75,7 @@ export default function LoginScreen() {
         <Link href="/signup" asChild>
           <Pressable style={styles.row}>
             <Text style={styles.muted}>No account? </Text>
-            <Text style={styles.link}>Sign up</Text>
+            <Text style={styles.linkInline}>Sign up</Text>
           </Pressable>
         </Link>
       </View>
@@ -82,60 +86,84 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0f0f12",
+    backgroundColor: palette.bg,
+  },
+  accentLine: {
+    height: 3,
+    backgroundColor: palette.sage,
+    opacity: 0.85,
   },
   inner: {
     flex: 1,
-    padding: 24,
+    padding: space.lg,
     justifyContent: "center",
-    gap: 12,
+    gap: space.sm,
+  },
+  kicker: {
+    fontFamily: fontFamily.sansMedium,
+    fontSize: 12,
+    letterSpacing: 2,
+    textTransform: "uppercase",
+    color: palette.textSecondary,
+    marginBottom: space.xs,
   },
   title: {
-    fontSize: 32,
-    fontWeight: "700",
-    color: "#eef2f6",
-    letterSpacing: 2,
+    fontFamily: fontFamily.displayBold,
+    fontSize: 44,
+    color: palette.text,
+    letterSpacing: -0.5,
+    marginBottom: space.sm,
   },
   sub: {
+    fontFamily: fontFamily.sans,
     fontSize: 16,
-    color: "#889",
-    marginBottom: 12,
+    lineHeight: 24,
+    color: palette.textSecondary,
+    marginBottom: space.md,
   },
   input: {
-    backgroundColor: "#1a1a20",
-    borderRadius: 10,
-    padding: 14,
+    fontFamily: fontFamily.sans,
+    backgroundColor: palette.surface,
+    borderRadius: radius.md,
+    padding: space.md,
     fontSize: 16,
-    color: "#eef2f6",
+    color: palette.text,
     borderWidth: 1,
-    borderColor: "#2e2e38",
+    borderColor: palette.border,
   },
   primary: {
-    backgroundColor: "#c45c5c",
-    paddingVertical: 14,
-    borderRadius: 10,
+    backgroundColor: palette.sage,
+    paddingVertical: 16,
+    borderRadius: radius.md,
     alignItems: "center",
-    marginTop: 8,
+    marginTop: space.sm,
   },
   primaryText: {
-    color: "#fff",
+    fontFamily: fontFamily.sansSemiBold,
+    color: palette.bg,
     fontSize: 17,
-    fontWeight: "600",
   },
   disabled: {
-    opacity: 0.6,
+    opacity: 0.55,
   },
   link: {
-    color: "#8ab4ff",
+    fontFamily: fontFamily.sansMedium,
+    color: palette.link,
     fontSize: 15,
-    marginTop: 4,
+    marginTop: space.xs,
   },
   muted: {
-    color: "#889",
+    fontFamily: fontFamily.sans,
+    color: palette.textMuted,
+    fontSize: 15,
+  },
+  linkInline: {
+    fontFamily: fontFamily.sansSemiBold,
+    color: palette.link,
     fontSize: 15,
   },
   row: {
     flexDirection: "row",
-    marginTop: 16,
+    marginTop: space.md,
   },
 });

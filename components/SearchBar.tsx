@@ -1,6 +1,8 @@
 import React from "react";
 import { StyleSheet, TextInput, View } from "react-native";
 
+import { fontFamily, palette, radius, space } from "@/constants/theme";
+
 type Props = {
   value: string;
   onChangeText: (t: string) => void;
@@ -13,8 +15,8 @@ export function SearchBar({ value, onChangeText, placeholder }: Props) {
       <TextInput
         value={value}
         onChangeText={onChangeText}
-        placeholder={placeholder ?? "Search by name or type"}
-        placeholderTextColor="#667"
+        placeholder={placeholder ?? "Search spaces, style, or room"}
+        placeholderTextColor={palette.textMuted}
         style={styles.input}
         autoCapitalize="none"
         autoCorrect={false}
@@ -26,17 +28,18 @@ export function SearchBar({ value, onChangeText, placeholder }: Props) {
 
 const styles = StyleSheet.create({
   wrap: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: space.md,
+    paddingVertical: space.sm,
   },
   input: {
-    backgroundColor: "#1a1a20",
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    fontFamily: fontFamily.sans,
+    backgroundColor: palette.surface,
+    borderRadius: radius.lg,
+    paddingHorizontal: space.md,
+    paddingVertical: 14,
     fontSize: 16,
-    color: "#eef2f6",
+    color: palette.text,
     borderWidth: 1,
-    borderColor: "#2e2e38",
+    borderColor: palette.border,
   },
 });

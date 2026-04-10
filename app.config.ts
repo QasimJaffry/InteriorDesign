@@ -14,7 +14,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   splash: {
     image: "./assets/images/splash-icon.png",
     resizeMode: "contain",
-    backgroundColor: "#0f0f12",
+    backgroundColor: "#0a0c0f",
   },
   ios: {
     supportsTablet: true,
@@ -29,7 +29,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   android: {
     adaptiveIcon: {
       foregroundImage: "./assets/images/adaptive-icon.png",
-      backgroundColor: "#0f0f12",
+      backgroundColor: "#0a0c0f",
     },
     package: "com.interio.app",
     permissions: ["CAMERA", "RECORD_AUDIO"],

@@ -1,36 +1,86 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useMemo, useRef, useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Dimensions,
   FlatList,
-  Platform,
+  Image,
   Pressable,
   StyleSheet,
   Text,
   View,
 } from "react-native";
-import Toast from "react-native-toast-message";
 
-import { FurnitureCard } from "@/components/FurnitureCard";
 import { SearchBar } from "@/components/SearchBar";
 import { useAuthSession } from "@/contexts/AuthContext";
-import { useFurniture } from "@/contexts/FurnitureContext";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useScanResult } from "@/hooks/useScanResult";
-import { useToggleFavourite } from "@/hooks/useFavourites";
 import { useAppStore } from "@/store/appStore";
+import {
+  INSPIRATION_DATA,
+  getInspirationForScan,
+  type InspirationItem,
+} from "@/constants/inspirationData";
+import { getRoomSuggestionsForType } from "@/constants/roomSuggestions";
+import { fontFamily, palette, radius, space } from "@/constants/theme";
+
+const CARD_GAP = 12;
+const SCREEN_W = Dimensions.get("window").width;
+const CARD_W = (SCREEN_W - CARD_GAP * 3) / 2;
+
+function ScanBanner({
+  detectedType,
+  onClear,
+}: {
+  detectedType: string;
+  onClear: () => void;
+}) {
+  const suggestion = getRoomSuggestionsForType(detectedType);
+  return (
+    <View style={styles.scanBanner}>
+      <View style={styles.scanBannerTop}>
+        <View style={styles.scanChip}>
+          <Text style={styles.scanChipText}>Scan · {detectedType}</Text>
+        </View>
+        <Pressable onPress={onClear} style={styles.clearBtn}>
+          <Text style={styles.clearBtnText}>Show all</Text>
+        </Pressable>
+      </View>
+      <Text style={styles.scanHeadline}>{suggestion.headline}</Text>
+      <Text style={styles.scanIntro} numberOfLines={2}>
+        {suggestion.intro}
+      </Text>
+    </View>
+  );
+}
+
+function InspirationCard({ item }: { item: InspirationItem }) {
+  const aspectRatio = item.category === "bedroom" ? 4 / 3 : 3 / 4;
+  return (
+    <View style={[styles.card, { width: CARD_W }]}>
+      <Image
+        source={{ uri: item.url }}
+        style={[styles.cardImage, { aspectRatio }]}
+        resizeMode="cover"
+      />
+      <View style={styles.cardMeta}>
+        <Text style={styles.cardStyle}>{item.style}</Text>
+        <Text style={styles.cardLabel} numberOfLines={2}>
+          {item.label}
+        </Text>
+      </View>
+    </View>
+  );
+}
 
 export default function HomeScreen() {
   const { isOfflineMode } = useAuthSession();
-  const { items, loading, error, isDemoCatalog } = useFurniture();
-  const { scanResult } = useScanResult();
-  const { toggle, busy: favBusy } = useToggleFavourite();
-  const savedIds = useAppStore((s) => s.savedIds);
+  const { scanResult, loading: scanLoading } = useScanResult();
   const scanFilter = useAppStore((s) => s.scanFilter);
   const setScanFilter = useAppStore((s) => s.setScanFilter);
+  const lastAppliedScanMs = useRef<number | null>(null);
 
   const [query, setQuery] = useState("");
   const debounced = useDebouncedValue(query, 300);
-  const lastAppliedScanMs = useRef<number | null>(null);
 
   useEffect(() => {
     const scannedAt = scanResult?.scannedAt;
@@ -48,34 +98,25 @@ export default function HomeScreen() {
     }
   }, [scanResult, setScanFilter]);
 
-  const filtered = useMemo(() => {
-    let list = items;
-    if (scanFilter) {
-      list = list.filter(
-        (f) => f.type.toLowerCase() === scanFilter.toLowerCase(),
-      );
-    }
+  const feed = useMemo(() => {
+    let list = getInspirationForScan(scanFilter);
     const q = debounced.trim().toLowerCase();
     if (q) {
       list = list.filter(
-        (f) =>
-          f.name.toLowerCase().includes(q) ||
-          f.type.toLowerCase().includes(q),
+        (item) =>
+          item.label.toLowerCase().includes(q) ||
+          item.style.toLowerCase().includes(q) ||
+          item.category.toLowerCase().replace("_", " ").includes(q) ||
+          item.tags.some((t) => t.includes(q)),
       );
     }
     return list;
-  }, [items, debounced, scanFilter]);
+  }, [scanFilter, debounced]);
 
-  useEffect(() => {
-    if (error && !isOfflineMode) {
-      Toast.show({ type: "error", text1: "Catalogue", text2: error });
-    }
-  }, [error, isOfflineMode]);
-
-  if (loading) {
+  if (scanLoading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color="#c45c5c" />
+        <ActivityIndicator size="large" color={palette.sage} />
       </View>
     );
   }
@@ -83,58 +124,43 @@ export default function HomeScreen() {
   return (
     <View style={styles.container}>
       <SearchBar value={query} onChangeText={setQuery} />
+
       {isOfflineMode ? (
-        <View style={styles.demoBanner}>
-          <Text style={styles.demoBannerText}>
-            Offline mode — no Firebase. Catalogue, saved items, and last scan
-            stay on this device only.
-          </Text>
-        </View>
-      ) : isDemoCatalog ? (
-        <View style={styles.demoBanner}>
-          <Text style={styles.demoBannerText}>
-            Demo catalogue (bundled CC0 models). Run{" "}
-            <Text style={styles.demoMono}>npm run seed:furniture</Text> to load
-            your own into Firestore.
+        <View style={styles.banner}>
+          <Text style={styles.bannerText}>
+            Offline — inspiration and saves stay on this device.
           </Text>
         </View>
       ) : null}
+
       {scanFilter ? (
-        <View style={styles.filterRow}>
-          <Text style={styles.filterText}>
-            Filter: {scanFilter}
+        <ScanBanner
+          detectedType={scanFilter}
+          onClear={() => setScanFilter(null)}
+        />
+      ) : (
+        <View style={styles.sectionHeader}>
+          <View>
+            <Text style={styles.sectionEyebrow}>Discover</Text>
+            <Text style={styles.sectionTitle}>Inspiration</Text>
+          </View>
+          <Text style={styles.sectionSub}>
+            {INSPIRATION_DATA.length} curated spaces
           </Text>
-          <Pressable onPress={() => setScanFilter(null)} style={styles.clearChip}>
-            <Text style={styles.clearChipText}>Clear</Text>
-          </Pressable>
         </View>
-      ) : null}
+      )}
+
       <FlatList
-        data={filtered}
+        data={feed}
         keyExtractor={(item) => item.id}
         numColumns={2}
         columnWrapperStyle={styles.row}
         contentContainerStyle={styles.list}
+        showsVerticalScrollIndicator={false}
         ListEmptyComponent={
-          <Text style={styles.empty}>No pieces match your filters.</Text>
+          <Text style={styles.empty}>No spaces match your search.</Text>
         }
-        renderItem={({ item }) => (
-          <FurnitureCard
-            item={item}
-            isSaved={savedIds.includes(item.id)}
-            saveDisabled={favBusy}
-            onToggleSave={async () => {
-              try {
-                await toggle(item.id, savedIds.includes(item.id));
-              } catch {
-                Toast.show({
-                  type: "error",
-                  text1: "Could not update saved items",
-                });
-              }
-            }}
-          />
-        )}
+        renderItem={({ item }) => <InspirationCard item={item} />}
       />
     </View>
   );
@@ -143,66 +169,154 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0f0f12",
+    backgroundColor: palette.bg,
   },
   center: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#0f0f12",
+    backgroundColor: palette.bg,
   },
   list: {
-    paddingBottom: 24,
+    paddingHorizontal: CARD_GAP,
+    paddingBottom: space.xl,
   },
   row: {
-    paddingHorizontal: 8,
+    gap: CARD_GAP,
+    marginBottom: CARD_GAP,
   },
-  empty: {
-    color: "#889",
-    textAlign: "center",
-    marginTop: 48,
-    paddingHorizontal: 24,
+  card: {
+    borderRadius: radius.lg,
+    backgroundColor: palette.surface,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: palette.borderSubtle,
   },
-  filterRow: {
+  cardImage: {
+    width: "100%",
+    backgroundColor: palette.surface2,
+  },
+  cardMeta: {
+    padding: space.sm + 2,
+  },
+  cardStyle: {
+    fontFamily: fontFamily.sansSemiBold,
+    color: palette.sage,
+    fontSize: 10,
+    textTransform: "uppercase",
+    letterSpacing: 1,
+    marginBottom: 4,
+  },
+  cardLabel: {
+    fontFamily: fontFamily.sansMedium,
+    color: palette.text,
+    fontSize: 14,
+    lineHeight: 19,
+  },
+  banner: {
+    marginHorizontal: space.md,
+    marginBottom: space.sm,
+    paddingHorizontal: space.md,
+    paddingVertical: space.sm + 2,
+    borderRadius: radius.md,
+    backgroundColor: palette.infoBg,
+    borderWidth: 1,
+    borderColor: palette.infoBorder,
+  },
+  bannerText: {
+    fontFamily: fontFamily.sans,
+    color: palette.textSecondary,
+    fontSize: 13,
+    lineHeight: 19,
+  },
+  sectionHeader: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    justifyContent: "space-between",
+    paddingHorizontal: space.md + 2,
+    paddingBottom: space.md,
+  },
+  sectionEyebrow: {
+    fontFamily: fontFamily.sansMedium,
+    color: palette.textMuted,
+    fontSize: 11,
+    letterSpacing: 2,
+    textTransform: "uppercase",
+    marginBottom: 4,
+  },
+  sectionTitle: {
+    fontFamily: fontFamily.displaySemibold,
+    fontSize: 28,
+    color: palette.text,
+    letterSpacing: -0.3,
+  },
+  sectionSub: {
+    fontFamily: fontFamily.sans,
+    color: palette.textMuted,
+    fontSize: 13,
+    marginBottom: 2,
+  },
+  scanBanner: {
+    marginHorizontal: space.md,
+    marginBottom: space.md,
+    paddingHorizontal: space.md,
+    paddingVertical: space.md,
+    borderRadius: radius.lg,
+    backgroundColor: palette.surface,
+    borderWidth: 1,
+    borderColor: palette.sageBorder,
+  },
+  scanBannerTop: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingBottom: 8,
+    marginBottom: space.sm,
   },
-  filterText: {
-    color: "#aab",
-    fontSize: 14,
-  },
-  clearChip: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-    backgroundColor: "#2a2a32",
-  },
-  clearChipText: {
-    color: "#8ab4ff",
-    fontSize: 14,
-    fontWeight: "600",
-  },
-  demoBanner: {
-    marginHorizontal: 12,
-    marginBottom: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: 10,
-    backgroundColor: "#1e2430",
+  scanChip: {
+    backgroundColor: palette.sageMuted,
     borderWidth: 1,
-    borderColor: "#2e3a52",
+    borderColor: palette.sageBorder,
+    borderRadius: radius.sm,
+    paddingHorizontal: space.sm,
+    paddingVertical: 4,
   },
-  demoBannerText: {
-    color: "#aab6c9",
-    fontSize: 13,
-    lineHeight: 18,
+  scanChipText: {
+    fontFamily: fontFamily.sansSemiBold,
+    color: palette.link,
+    fontSize: 11,
+    textTransform: "uppercase",
+    letterSpacing: 0.6,
   },
-  demoMono: {
-    fontFamily: Platform.select({ ios: "Menlo", default: "monospace" }),
-    color: "#c9d4e8",
+  scanHeadline: {
+    fontFamily: fontFamily.displayMedium,
+    color: palette.text,
+    fontSize: 20,
+    marginBottom: 6,
+  },
+  scanIntro: {
+    fontFamily: fontFamily.sans,
+    color: palette.textSecondary,
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  clearBtn: {
+    paddingHorizontal: space.sm,
+    paddingVertical: 6,
+    borderRadius: radius.sm,
+    backgroundColor: palette.surface2,
+  },
+  clearBtnText: {
+    fontFamily: fontFamily.sansSemiBold,
+    color: palette.link,
     fontSize: 12,
+  },
+  empty: {
+    fontFamily: fontFamily.sans,
+    color: palette.textMuted,
+    textAlign: "center",
+    marginTop: 48,
+    paddingHorizontal: space.lg,
+    fontSize: 15,
+    lineHeight: 22,
   },
 });

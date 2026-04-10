@@ -1,5 +1,16 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import {
+  CormorantGaramond_500Medium,
+  CormorantGaramond_600SemiBold,
+  CormorantGaramond_700Bold,
+} from "@expo-google-fonts/cormorant-garamond";
+import {
+  PlusJakartaSans_400Regular,
+  PlusJakartaSans_500Medium,
+  PlusJakartaSans_600SemiBold,
+  PlusJakartaSans_700Bold,
+} from "@expo-google-fonts/plus-jakarta-sans";
+import {
   DarkTheme,
   ThemeProvider,
 } from "@react-navigation/native";
@@ -12,8 +23,10 @@ import Toast from "react-native-toast-message";
 import "react-native-reanimated";
 
 import { ObjectDetectionProviderWrapper } from "@/components/ObjectDetectionProviderWrapper";
+import { toastConfig } from "@/components/toastConfig";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { FurnitureProvider } from "@/contexts/FurnitureContext";
+import { palette } from "@/constants/theme";
 
 export { ErrorBoundary } from "expo-router";
 
@@ -27,11 +40,11 @@ const NavTheme = {
   ...DarkTheme,
   colors: {
     ...DarkTheme.colors,
-    background: "#0f0f12",
-    card: "#121218",
-    primary: "#c45c5c",
-    text: "#eef2f6",
-    border: "#2e2e38",
+    background: palette.bg,
+    card: palette.elevated,
+    primary: palette.sage,
+    text: palette.text,
+    border: palette.border,
   },
 };
 
@@ -39,6 +52,13 @@ export default function RootLayout() {
   const [loaded, error] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
     ...FontAwesome.font,
+    PlusJakartaSans_400Regular,
+    PlusJakartaSans_500Medium,
+    PlusJakartaSans_600SemiBold,
+    PlusJakartaSans_700Bold,
+    CormorantGaramond_500Medium,
+    CormorantGaramond_600SemiBold,
+    CormorantGaramond_700Bold,
   });
 
   useEffect(() => {
@@ -73,7 +93,7 @@ export default function RootLayout() {
                 }}
               />
             </Stack>
-            <Toast />
+            <Toast config={toastConfig} />
           </ThemeProvider>
         </FurnitureProvider>
       </ObjectDetectionProviderWrapper>

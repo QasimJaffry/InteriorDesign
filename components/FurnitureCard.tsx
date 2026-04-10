@@ -9,6 +9,7 @@ import {
   type ViewStyle,
 } from "react-native";
 
+import { fontFamily, palette, radius } from "@/constants/theme";
 import type { Furniture } from "@/types/models";
 
 type Props = {
@@ -46,8 +47,8 @@ export function FurnitureCard({
       >
         <FontAwesome
           name={isSaved ? "heart" : "heart-o"}
-          size={22}
-          color={isSaved ? "#c45c5c" : "#888"}
+          size={20}
+          color={isSaved ? palette.sage : palette.textMuted}
         />
       </Pressable>
     </View>
@@ -58,30 +59,34 @@ const styles = StyleSheet.create({
   card: {
     flex: 1,
     margin: 6,
-    borderRadius: 12,
-    backgroundColor: "#1a1a20",
+    borderRadius: radius.lg,
+    backgroundColor: palette.surface,
     overflow: "hidden",
+    borderWidth: 1,
+    borderColor: palette.borderSubtle,
   },
   image: {
     width: "100%",
     aspectRatio: 1,
-    backgroundColor: "#2a2a32",
+    backgroundColor: palette.surface2,
   },
   meta: {
     padding: 10,
     paddingRight: 40,
   },
   type: {
-    color: "#9ab",
-    fontSize: 12,
+    fontFamily: fontFamily.sansMedium,
+    color: palette.textSecondary,
+    fontSize: 11,
     textTransform: "uppercase",
-    letterSpacing: 0.5,
+    letterSpacing: 0.8,
   },
   name: {
-    color: "#eef2f6",
+    fontFamily: fontFamily.sansSemiBold,
+    color: palette.text,
     fontSize: 15,
-    fontWeight: "600",
     marginTop: 4,
+    lineHeight: 20,
   },
   heartBtn: {
     position: "absolute",
@@ -89,6 +94,6 @@ const styles = StyleSheet.create({
     right: 8,
     padding: 8,
     borderRadius: 20,
-    backgroundColor: "rgba(0,0,0,0.45)",
+    backgroundColor: palette.overlay,
   },
 });

@@ -12,6 +12,7 @@ import {
 import Toast from "react-native-toast-message";
 
 import { useAuth } from "@/hooks/useAuth";
+import { fontFamily, palette, radius, space } from "@/constants/theme";
 
 export default function SignupScreen() {
   const { signUp, busy } = useAuth();
@@ -43,11 +44,15 @@ export default function SignupScreen() {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <View style={styles.inner}>
+        <Text style={styles.lead}>
+          Create a profile to sync saved pieces and scans across devices.
+        </Text>
+
         <Text style={styles.label}>Name</Text>
         <TextInput
           style={styles.input}
           placeholder="Your name"
-          placeholderTextColor="#667"
+          placeholderTextColor={palette.textMuted}
           value={name}
           onChangeText={setName}
         />
@@ -55,7 +60,7 @@ export default function SignupScreen() {
         <TextInput
           style={styles.input}
           placeholder="Email"
-          placeholderTextColor="#667"
+          placeholderTextColor={palette.textMuted}
           autoCapitalize="none"
           keyboardType="email-address"
           value={email}
@@ -65,7 +70,7 @@ export default function SignupScreen() {
         <TextInput
           style={styles.input}
           placeholder="Password (6+ characters)"
-          placeholderTextColor="#667"
+          placeholderTextColor={palette.textMuted}
           secureTextEntry
           value={password}
           onChangeText={setPassword}
@@ -91,53 +96,66 @@ export default function SignupScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0f0f12",
+    backgroundColor: palette.bg,
   },
   inner: {
     flex: 1,
-    padding: 24,
-    paddingTop: 16,
-    gap: 8,
+    padding: space.lg,
+    paddingTop: space.md,
+    gap: space.xs,
+  },
+  lead: {
+    fontFamily: fontFamily.sans,
+    fontSize: 15,
+    lineHeight: 22,
+    color: palette.textSecondary,
+    marginBottom: space.md,
   },
   label: {
-    color: "#aab",
-    fontSize: 13,
-    marginTop: 8,
+    fontFamily: fontFamily.sansMedium,
+    color: palette.textMuted,
+    fontSize: 12,
+    textTransform: "uppercase",
+    letterSpacing: 0.6,
+    marginTop: space.sm,
   },
   input: {
-    backgroundColor: "#1a1a20",
-    borderRadius: 10,
-    padding: 14,
+    fontFamily: fontFamily.sans,
+    backgroundColor: palette.surface,
+    borderRadius: radius.md,
+    padding: space.md,
     fontSize: 16,
-    color: "#eef2f6",
+    color: palette.text,
     borderWidth: 1,
-    borderColor: "#2e2e38",
+    borderColor: palette.border,
   },
   primary: {
-    backgroundColor: "#c45c5c",
-    paddingVertical: 14,
-    borderRadius: 10,
+    backgroundColor: palette.sage,
+    paddingVertical: 16,
+    borderRadius: radius.md,
     alignItems: "center",
-    marginTop: 16,
+    marginTop: space.lg,
   },
   primaryText: {
-    color: "#fff",
+    fontFamily: fontFamily.sansSemiBold,
+    color: palette.bg,
     fontSize: 17,
-    fontWeight: "600",
   },
   disabled: {
-    opacity: 0.6,
+    opacity: 0.55,
   },
   link: {
-    color: "#8ab4ff",
+    fontFamily: fontFamily.sansSemiBold,
+    color: palette.link,
     fontSize: 15,
   },
   muted: {
-    color: "#889",
+    fontFamily: fontFamily.sans,
+    color: palette.textMuted,
     fontSize: 15,
   },
   row: {
     flexDirection: "row",
-    marginTop: 16,
+    marginTop: space.md,
   },
 });

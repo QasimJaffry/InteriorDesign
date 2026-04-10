@@ -3,6 +3,7 @@ import React from "react";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 
 import { useAuthSession } from "@/contexts/AuthContext";
+import { palette } from "@/constants/theme";
 
 export default function RootIndex() {
   const { user, initializing } = useAuthSession();
@@ -10,7 +11,7 @@ export default function RootIndex() {
   if (initializing) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color="#c45c5c" />
+        <ActivityIndicator size="large" color={palette.sage} />
       </View>
     );
   }
@@ -27,6 +28,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#0f0f12",
+    backgroundColor: palette.bg,
   },
 });

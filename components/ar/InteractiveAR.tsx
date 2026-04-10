@@ -19,6 +19,7 @@ import {
 import Toast from "react-native-toast-message";
 
 import { useFurniture } from "@/contexts/FurnitureContext";
+import { fontFamily, palette, radius, space } from "@/constants/theme";
 import type { Furniture } from "@/types/models";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -326,7 +327,7 @@ export function InteractiveAR() {
   if (loading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color="#c45c5c" />
+        <ActivityIndicator size="large" color={palette.sage} />
       </View>
     );
   }
@@ -418,110 +419,115 @@ export function InteractiveAR() {
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: "#000" },
+  root: { flex: 1, backgroundColor: palette.black },
   ar: { flex: 1 },
 
   center: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#0f0f12",
+    backgroundColor: palette.bg,
   },
 
   statusRow: {
     position: "absolute",
     top: 52,
-    left: 16,
-    right: 16,
+    left: space.md,
+    right: space.md,
     flexDirection: "row",
     alignItems: "flex-start",
-    gap: 8,
+    gap: space.sm,
   },
   statusPill: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.58)",
-    borderRadius: 14,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    backgroundColor: palette.overlay,
+    borderRadius: radius.lg,
+    paddingHorizontal: space.md,
+    paddingVertical: space.sm + 2,
     alignItems: "center",
+    borderWidth: 1,
+    borderColor: palette.border,
   },
   statusTitle: {
-    color: "#fff",
-    fontWeight: "700",
+    fontFamily: fontFamily.sansSemiBold,
+    color: palette.white,
     fontSize: 14,
     marginBottom: 2,
   },
   statusHint: {
-    color: "#bbc",
+    fontFamily: fontFamily.sans,
+    color: palette.textSecondary,
     fontSize: 12,
     textAlign: "center",
+    lineHeight: 17,
   },
   doneBtn: {
-    backgroundColor: "#c45c5c",
-    borderRadius: 14,
-    paddingHorizontal: 18,
-    paddingVertical: 10,
+    backgroundColor: palette.sage,
+    borderRadius: radius.lg,
+    paddingHorizontal: space.md,
+    paddingVertical: space.sm + 2,
     justifyContent: "center",
   },
   doneBtnText: {
-    color: "#fff",
-    fontWeight: "700",
+    fontFamily: fontFamily.sansSemiBold,
+    color: palette.bg,
     fontSize: 14,
   },
 
   tray: {
-    backgroundColor: "rgba(15,15,18,0.96)",
+    backgroundColor: palette.overlay,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: "#2e2e38",
-    paddingTop: 10,
-    paddingBottom: 16,
+    borderTopColor: palette.border,
+    paddingTop: space.sm,
+    paddingBottom: space.md,
   },
   trayList: {
-    paddingHorizontal: 12,
-    gap: 8,
+    paddingHorizontal: space.md - 4,
+    gap: space.sm,
   },
   trayItem: {
     width: 88,
     marginHorizontal: 4,
-    borderRadius: 10,
+    borderRadius: radius.md,
     overflow: "hidden",
-    backgroundColor: "#1a1a20",
+    backgroundColor: palette.surface,
     borderWidth: 2,
     borderColor: "transparent",
   },
   trayItemActive: {
-    borderColor: "#c45c5c",
+    borderColor: palette.sage,
   },
   trayImg: {
     width: "100%",
     height: 72,
-    backgroundColor: "#2a2a32",
+    backgroundColor: palette.surface2,
   },
   trayName: {
-    color: "#ccd",
+    fontFamily: fontFamily.sans,
+    color: palette.textSecondary,
     fontSize: 11,
     padding: 6,
   },
 
   actions: {
     flexDirection: "row",
-    paddingHorizontal: 16,
-    marginTop: 10,
-    gap: 10,
+    paddingHorizontal: space.md,
+    marginTop: space.sm,
+    gap: space.sm,
   },
   actionBtn: {
     flex: 1,
-    paddingVertical: 12,
-    borderRadius: 10,
-    backgroundColor: "#252530",
+    paddingVertical: space.md - 2,
+    borderRadius: radius.md,
+    backgroundColor: palette.surface2,
     alignItems: "center",
   },
   actionBtnDisabled: {
-    opacity: 0.3,
+    opacity: 0.35,
   },
   actionText: {
-    color: "#eef2f6",
-    fontWeight: "600",
+    fontFamily: fontFamily.sansSemiBold,
+    color: palette.text,
     fontSize: 14,
   },
 });

@@ -3,6 +3,7 @@ import React from "react";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 
 import { useAuthSession } from "@/contexts/AuthContext";
+import { fontFamily, palette } from "@/constants/theme";
 
 export default function AuthLayout() {
   const { user, initializing } = useAuthSession();
@@ -10,7 +11,7 @@ export default function AuthLayout() {
   if (initializing) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color="#c45c5c" />
+        <ActivityIndicator size="large" color={palette.sage} />
       </View>
     );
   }
@@ -22,10 +23,15 @@ export default function AuthLayout() {
   return (
     <Stack
       screenOptions={{
-        headerStyle: { backgroundColor: "#121218" },
-        headerTintColor: "#eef2f6",
-        headerTitleStyle: { fontWeight: "600" },
-        contentStyle: { backgroundColor: "#0f0f12" },
+        headerStyle: { backgroundColor: palette.bg },
+        headerShadowVisible: false,
+        headerTintColor: palette.link,
+        headerTitleStyle: {
+          fontFamily: fontFamily.sansSemiBold,
+          fontSize: 17,
+          color: palette.text,
+        },
+        contentStyle: { backgroundColor: palette.bg },
       }}
     >
       <Stack.Screen name="login" options={{ title: "Sign in" }} />
@@ -40,6 +46,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#0f0f12",
+    backgroundColor: palette.bg,
   },
 });

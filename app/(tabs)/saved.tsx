@@ -13,6 +13,8 @@ import Toast from "react-native-toast-message";
 import { FurnitureCard } from "@/components/FurnitureCard";
 import { useSavedFurniture } from "@/hooks/useSavedFurniture";
 import { useToggleFavourite } from "@/hooks/useFavourites";
+import { fontFamily, palette, radius, space } from "@/constants/theme";
+
 export default function SavedScreen() {
   const { savedItems, loading, error } = useSavedFurniture();
   const { toggle, busy } = useToggleFavourite();
@@ -26,7 +28,7 @@ export default function SavedScreen() {
   if (loading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color="#c45c5c" />
+        <ActivityIndicator size="large" color={palette.sage} />
       </View>
     );
   }
@@ -34,9 +36,11 @@ export default function SavedScreen() {
   if (savedItems.length === 0) {
     return (
       <View style={styles.center}>
-        <Text style={styles.emptyTitle}>No saved pieces yet</Text>
+        <Text style={styles.emptyEyebrow}>Collection</Text>
+        <Text style={styles.emptyTitle}>Nothing saved yet</Text>
         <Text style={styles.emptySub}>
-          Save items from the catalogue with the heart icon.
+          Heart pieces from the catalogue or after a scan — they will appear
+          here for AR placement and checkout prep.
         </Text>
         <Link href="/(tabs)" asChild>
           <Pressable style={styles.primary}>
@@ -80,10 +84,10 @@ export default function SavedScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0f0f12",
+    backgroundColor: palette.bg,
   },
   list: {
-    paddingBottom: 24,
+    paddingBottom: space.lg,
   },
   row: {
     paddingHorizontal: 8,
@@ -92,31 +96,42 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    padding: 24,
-    backgroundColor: "#0f0f12",
+    padding: space.lg,
+    backgroundColor: palette.bg,
+  },
+  emptyEyebrow: {
+    fontFamily: fontFamily.sansMedium,
+    color: palette.textMuted,
+    fontSize: 11,
+    letterSpacing: 2,
+    textTransform: "uppercase",
+    marginBottom: space.sm,
   },
   emptyTitle: {
-    color: "#eef2f6",
-    fontSize: 20,
-    fontWeight: "600",
-    marginBottom: 8,
+    fontFamily: fontFamily.displaySemibold,
+    color: palette.text,
+    fontSize: 26,
+    marginBottom: space.sm,
+    textAlign: "center",
   },
   emptySub: {
-    color: "#889",
+    fontFamily: fontFamily.sans,
+    color: palette.textSecondary,
     fontSize: 15,
     textAlign: "center",
-    lineHeight: 22,
-    marginBottom: 20,
+    lineHeight: 23,
+    marginBottom: space.lg,
+    maxWidth: 320,
   },
   primary: {
-    backgroundColor: "#c45c5c",
-    paddingHorizontal: 24,
-    paddingVertical: 14,
-    borderRadius: 10,
+    backgroundColor: palette.sage,
+    paddingHorizontal: space.lg,
+    paddingVertical: 16,
+    borderRadius: radius.md,
   },
   primaryText: {
-    color: "#fff",
-    fontWeight: "600",
+    fontFamily: fontFamily.sansSemiBold,
+    color: palette.bg,
     fontSize: 16,
   },
 });

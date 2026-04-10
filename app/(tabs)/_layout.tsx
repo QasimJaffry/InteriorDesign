@@ -6,6 +6,7 @@ import { ActivityIndicator, StyleSheet, View } from "react-native";
 import { FavouritesSync } from "@/components/FavouritesSync";
 import { useAuthSession } from "@/contexts/AuthContext";
 import Colors from "@/constants/Colors";
+import { fontFamily, palette } from "@/constants/theme";
 import { useColorScheme } from "@/components/useColorScheme";
 import { useClientOnlyValue } from "@/components/useClientOnlyValue";
 
@@ -13,7 +14,7 @@ function TabBarIcon(props: {
   name: React.ComponentProps<typeof FontAwesome>["name"];
   color: string;
 }) {
-  return <FontAwesome size={24} style={{ marginBottom: -2 }} {...props} />;
+  return <FontAwesome size={22} style={{ marginBottom: -2 }} {...props} />;
 }
 
 export default function TabLayout() {
@@ -23,7 +24,7 @@ export default function TabLayout() {
   if (initializing) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color="#c45c5c" />
+        <ActivityIndicator size="large" color={palette.sage} />
       </View>
     );
   }
@@ -38,12 +39,32 @@ export default function TabLayout() {
       <Tabs
         screenOptions={{
           tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
+          tabBarInactiveTintColor: palette.textMuted,
           tabBarStyle: {
-            backgroundColor: "#121218",
-            borderTopColor: "#2e2e38",
+            backgroundColor: palette.elevated,
+            borderTopColor: palette.border,
+            height: 58,
+            paddingBottom: 6,
+            paddingTop: 6,
           },
-          headerStyle: { backgroundColor: "#121218" },
-          headerTintColor: "#eef2f6",
+          tabBarLabelStyle: {
+            fontFamily: fontFamily.sansMedium,
+            fontSize: 11,
+            letterSpacing: 0.3,
+          },
+          headerStyle: {
+            backgroundColor: palette.bg,
+            shadowOpacity: 0,
+            elevation: 0,
+            borderBottomWidth: StyleSheet.hairlineWidth,
+            borderBottomColor: palette.border,
+          },
+          headerTitleStyle: {
+            fontFamily: fontFamily.displaySemibold,
+            fontSize: 22,
+            color: palette.text,
+          },
+          headerTintColor: palette.link,
           headerShown: useClientOnlyValue(false, true),
         }}
       >
@@ -102,6 +123,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#0f0f12",
+    backgroundColor: palette.bg,
   },
 });

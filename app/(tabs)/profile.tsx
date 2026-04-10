@@ -13,6 +13,7 @@ import Toast from "react-native-toast-message";
 import { useAuthSession } from "@/contexts/AuthContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserProfile } from "@/hooks/useUserProfile";
+import { fontFamily, palette, radius, space } from "@/constants/theme";
 
 export default function ProfileScreen() {
   const { isOfflineMode } = useAuthSession();
@@ -81,7 +82,7 @@ export default function ProfileScreen() {
   if (loading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color="#c45c5c" />
+        <ActivityIndicator size="large" color={palette.sage} />
       </View>
     );
   }
@@ -96,20 +97,20 @@ export default function ProfileScreen() {
           </Text>
         </View>
       ) : null}
-      <View style={styles.card}>
-        <Text style={styles.label}>Name</Text>
-        <Text style={styles.value}>{displayName}</Text>
-        <Text style={[styles.label, styles.mt]}>Email</Text>
-        <Text style={styles.value}>{email}</Text>
+
+      <View style={styles.hero}>
+        <Text style={styles.heroEyebrow}>Account</Text>
+        <Text style={styles.heroTitle}>{displayName}</Text>
+        <Text style={styles.heroEmail}>{email}</Text>
       </View>
 
       {isOfflineMode ? null : (
         <>
-          <Text style={styles.section}>Change password</Text>
+          <Text style={styles.section}>Security</Text>
           <TextInput
             style={styles.input}
             placeholder="Current password"
-            placeholderTextColor="#667"
+            placeholderTextColor={palette.textMuted}
             secureTextEntry
             value={currentPassword}
             onChangeText={setCurrentPassword}
@@ -117,7 +118,7 @@ export default function ProfileScreen() {
           <TextInput
             style={styles.input}
             placeholder="New password"
-            placeholderTextColor="#667"
+            placeholderTextColor={palette.textMuted}
             secureTextEntry
             value={newPassword}
             onChangeText={setNewPassword}
@@ -125,7 +126,7 @@ export default function ProfileScreen() {
           <TextInput
             style={styles.input}
             placeholder="Confirm new password"
-            placeholderTextColor="#667"
+            placeholderTextColor={palette.textMuted}
             secureTextEntry
             value={confirmPassword}
             onChangeText={setConfirmPassword}
@@ -156,89 +157,94 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0f0f12",
-    padding: 20,
+    backgroundColor: palette.bg,
+    padding: space.lg,
   },
   offlineBanner: {
-    backgroundColor: "#1e2430",
-    borderRadius: 12,
-    padding: 14,
-    marginBottom: 16,
+    backgroundColor: palette.infoBg,
+    borderRadius: radius.lg,
+    padding: space.md,
+    marginBottom: space.md,
     borderWidth: 1,
-    borderColor: "#2e3a52",
+    borderColor: palette.infoBorder,
   },
   offlineBannerText: {
-    color: "#aab6c9",
+    fontFamily: fontFamily.sans,
+    color: palette.textSecondary,
     fontSize: 14,
-    lineHeight: 20,
+    lineHeight: 21,
   },
   center: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#0f0f12",
+    backgroundColor: palette.bg,
   },
-  card: {
-    backgroundColor: "#1a1a20",
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 24,
-    borderWidth: 1,
-    borderColor: "#2e2e38",
+  hero: {
+    marginBottom: space.lg,
+    paddingBottom: space.lg,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: palette.border,
   },
-  label: {
-    color: "#889",
-    fontSize: 12,
+  heroEyebrow: {
+    fontFamily: fontFamily.sansMedium,
+    color: palette.textMuted,
+    fontSize: 11,
+    letterSpacing: 2,
     textTransform: "uppercase",
+    marginBottom: space.sm,
   },
-  mt: {
-    marginTop: 12,
+  heroTitle: {
+    fontFamily: fontFamily.displaySemibold,
+    fontSize: 32,
+    color: palette.text,
+    marginBottom: 6,
   },
-  value: {
-    color: "#eef2f6",
-    fontSize: 18,
-    fontWeight: "600",
-    marginTop: 4,
+  heroEmail: {
+    fontFamily: fontFamily.sans,
+    fontSize: 15,
+    color: palette.textSecondary,
   },
   section: {
-    color: "#ccd",
-    fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 12,
+    fontFamily: fontFamily.sansSemiBold,
+    color: palette.text,
+    fontSize: 15,
+    marginBottom: space.md,
   },
   input: {
-    backgroundColor: "#1a1a20",
-    borderRadius: 10,
-    padding: 14,
+    fontFamily: fontFamily.sans,
+    backgroundColor: palette.surface,
+    borderRadius: radius.md,
+    padding: space.md,
     fontSize: 16,
-    color: "#eef2f6",
+    color: palette.text,
     borderWidth: 1,
-    borderColor: "#2e2e38",
-    marginBottom: 10,
+    borderColor: palette.border,
+    marginBottom: space.sm,
   },
   primary: {
-    backgroundColor: "#c45c5c",
-    paddingVertical: 14,
-    borderRadius: 10,
+    backgroundColor: palette.sage,
+    paddingVertical: 16,
+    borderRadius: radius.md,
     alignItems: "center",
-    marginTop: 8,
+    marginTop: space.sm,
   },
   primaryText: {
-    color: "#fff",
+    fontFamily: fontFamily.sansSemiBold,
+    color: palette.bg,
     fontSize: 17,
-    fontWeight: "600",
   },
   disabled: {
-    opacity: 0.6,
+    opacity: 0.55,
   },
   signOut: {
-    marginTop: 32,
-    paddingVertical: 14,
+    marginTop: space.xl,
+    paddingVertical: space.md,
     alignItems: "center",
   },
   signOutText: {
-    color: "#f88",
+    fontFamily: fontFamily.sansSemiBold,
+    color: palette.danger,
     fontSize: 16,
-    fontWeight: "600",
   },
 });

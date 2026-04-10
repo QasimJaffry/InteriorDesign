@@ -4,7 +4,7 @@
     <item name="android:editTextStyle">@style/ResetEditText</item>
     <item name="android:editTextBackground">@drawable/rn_edit_text_material</item>
     <item name="colorPrimary">@color/colorPrimary</item>
-    <item name="android:statusBarColor">#0f0f12</item>
+    <item name="android:statusBarColor">#0a0c0f</item>
     <item name="android:windowOptOutEdgeToEdgeEnforcement" tools:targetApi="35">true</item>
   </style>
   <style name="ResetEditText" parent="@android:style/Widget.EditText">
