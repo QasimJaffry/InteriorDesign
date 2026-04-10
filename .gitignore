@@ -1,6 +1,6 @@
 # Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
 
-# dependencies
+# Dependencies
 node_modules/
 
 # Expo
@@ -9,28 +9,65 @@ dist/
 web-build/
 expo-env.d.ts
 
-# Native
+# Native (see also android/.gitignore, ios/.gitignore)
 *.orig.*
 *.jks
 *.p8
 *.p12
 *.key
+*.keystore
+!android/app/debug.keystore
 *.mobileprovision
 
-# Metro
+# Metro / bundler
 .metro-health-check*
+.cache/
 
-# debug
+# Logs & diagnostics
+*.log
 npm-debug.*
 yarn-debug.*
 yarn-error.*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# Env & secrets (keep .env.example committed)
+.env
+.env.*
+!.env.example
+
+# Firebase / Google (add explicitly if you intend to commit safe placeholders)
+google-services.json
+GoogleService-Info.plist
+*-firebase-adminsdk-*.json
+serviceAccount*.json
+
+# TypeScript
+*.tsbuildinfo
+
+# Testing & coverage
+coverage/
+.nyc_output/
 
 # macOS
 .DS_Store
 *.pem
 
-# local env files
-.env*.local
+# IDEs & editors
+.idea/
+*.swp
+*.swo
+*~
 
-# typescript
-*.tsbuildinfo
+# Temporary / misc
+tmp/
+temp/
+*.tmp
+.turbo/
+
+# Ruby (CocoaPods / Fastlane tooling)
+vendor/bundle/
+.bundle/
+
+# Optional local tooling
+.vercel

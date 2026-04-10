@@ -1,7 +1,8 @@
 import { useObjectDetection } from "@infinitered/react-native-mlkit-object-detection";
 import { CameraView, useCameraPermissions } from "expo-camera";
+import * as FileSystem from "expo-file-system";
 import { router } from "expo-router";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -19,80 +20,63 @@ export function CameraNative() {
   const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = useRef<CameraView>(null);
   const detector = useObjectDetection("default");
-  const processingRef = useRef(false);
   const { saveScanResult, saving } = useScanResult();
   const setScanFilter = useAppStore((s) => s.setScanFilter);
 
-  const [overlay, setOverlay] = useState<{
+  const [scanning, setScanning] = useState(false);
+  const [lastResult, setLastResult] = useState<{
     type: string;
     confidence: number;
   } | null>(null);
-  const [live, setLive] = useState<{
-    type: string;
-    confidence: number;
-  } | null>(null);
-
-  const runFrame = useCallback(async () => {
-    if (!detector?.isLoaded() || !cameraRef.current) {
-      return;
-    }
-    if (processingRef.current) {
-      return;
-    }
-    processingRef.current = true;
-    try {
-      const photo = await cameraRef.current.takePictureAsync({
-        quality: 0.6,
-      });
-      if (!photo?.uri) {
-        return;
-      }
-      const results = await detector.detectObjects(photo.uri);
-      const labels = results.flatMap((r) => r.labels ?? []);
-      const best = bestDetectionFromLabels(labels);
-      if (best) {
-        setLive(best);
-        setOverlay(best);
-      } else {
-        setLive(null);
-      }
-    } catch {
-      setLive(null);
-    } finally {
-      processingRef.current = false;
-    }
-  }, [detector]);
-
-  useEffect(() => {
-    if (!detector?.isLoaded()) {
-      return;
-    }
-    const id = setInterval(runFrame, 500);
-    return () => clearInterval(id);
-  }, [detector, runFrame]);
 
   const onCapture = async () => {
-    const source = overlay ?? live;
-    if (!source) {
-      Toast.show({
-        type: "info",
-        text1: "Nothing detected yet",
-        text2: "Point the camera at furniture and try again.",
-      });
+    if (!detector?.isLoaded() || !cameraRef.current || scanning || saving) {
       return;
     }
+    setScanning(true);
+    let photoUri: string | null = null;
     try {
-      await saveScanResult(source.type, source.confidence);
-      setScanFilter(source.type);
+      const photo = await cameraRef.current.takePictureAsync({
+        quality: 0.4,
+        skipMetadata: true,
+      });
+      photoUri = photo?.uri ?? null;
+      if (!photoUri) {
+        Toast.show({ type: "error", text1: "Failed to take photo" });
+        return;
+      }
+
+      const results = await detector.detectObjects(photoUri);
+      const labels = results.flatMap((r) => r.labels ?? []);
+      const best = bestDetectionFromLabels(labels);
+
+      if (!best) {
+        setLastResult(null);
+        Toast.show({
+          type: "info",
+          text1: "Nothing detected",
+          text2: "Point the camera at furniture and try again.",
+        });
+        return;
+      }
+
+      setLastResult(best);
+      await saveScanResult(best.type, best.confidence);
+      setScanFilter(best.type);
       router.replace({
         pathname: "/post-scan",
         params: {
-          detectedType: source.type,
-          confidence: String(source.confidence),
+          detectedType: best.type,
+          confidence: String(best.confidence),
         },
       });
     } catch {
       Toast.show({ type: "error", text1: "Could not save scan" });
+    } finally {
+      if (photoUri) {
+        void FileSystem.deleteAsync(photoUri, { idempotent: true });
+      }
+      setScanning(false);
     }
   };
 
@@ -124,30 +108,40 @@ export function CameraNative() {
     );
   }
 
+  const busy = scanning || saving;
+
   return (
     <View style={styles.container}>
       <CameraView ref={cameraRef} style={styles.camera} facing="back" />
       <View style={styles.hud} pointerEvents="box-none">
         <View style={styles.badge}>
-          <Text style={styles.badgeTitle}>Live detection</Text>
-          {overlay ? (
+          {scanning ? (
             <>
-              <Text style={styles.badgeType}>{overlay.type}</Text>
+              <ActivityIndicator size="small" color="#9df" />
+              <Text style={styles.muted}>Detecting…</Text>
+            </>
+          ) : lastResult ? (
+            <>
+              <Text style={styles.badgeTitle}>Last scan</Text>
+              <Text style={styles.badgeType}>{lastResult.type}</Text>
               <Text style={styles.badgeConf}>
-                {(overlay.confidence * 100).toFixed(0)}% confidence
+                {(lastResult.confidence * 100).toFixed(0)}% confidence
               </Text>
             </>
           ) : (
-            <Text style={styles.muted}>Scanning…</Text>
+            <>
+              <Text style={styles.badgeTitle}>Ready</Text>
+              <Text style={styles.muted}>Point at furniture and tap Scan</Text>
+            </>
           )}
         </View>
         <Pressable
-          style={[styles.capture, saving && styles.disabled]}
+          style={[styles.capture, busy && styles.disabled]}
           onPress={onCapture}
-          disabled={saving}
+          disabled={busy}
         >
           <Text style={styles.captureText}>
-            {saving ? "Saving…" : "Tap to capture & filter home"}
+            {saving ? "Saving…" : scanning ? "Scanning…" : "Scan furniture"}
           </Text>
         </Pressable>
       </View>
@@ -177,6 +171,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     minWidth: 220,
     alignItems: "center",
+    gap: 4,
   },
   badgeTitle: {
     color: "#aab",
@@ -197,6 +192,7 @@ const styles = StyleSheet.create({
   muted: {
     color: "#889",
     fontSize: 15,
+    textAlign: "center",
   },
   capture: {
     backgroundColor: "#c45c5c",

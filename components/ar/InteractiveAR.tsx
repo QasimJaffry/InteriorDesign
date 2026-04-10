@@ -1,6 +1,5 @@
 import {
   Viro3DObject,
-  ViroARPlaneSelector,
   ViroARScene,
   ViroARSceneNavigator,
   ViroAmbientLight,
@@ -19,7 +18,6 @@ import {
 } from "react-native";
 import Toast from "react-native-toast-message";
 
-
 import { useFurniture } from "@/contexts/FurnitureContext";
 import type { Furniture } from "@/types/models";
 
@@ -28,31 +26,27 @@ import type { Furniture } from "@/types/models";
 export type PlacedModel = {
   id: string;
   position: [number, number, number];
-  rotationY: number; // degrees, Y-axis only
-  scale: number;     // uniform scale
+  rotationY: number;
+  scale: number;
   modelUrl: string;
   name: string;
-};
-
-type ARPlanePayload = {
-  position?: number[];  // world-space anchor [x, y, z]
-  center?: number[];    // plane-local 2D [x, z] — not for placement
-  width?: number;
-  height?: number;
-  anchorId?: string;
 };
 
 type ARViroAppProps = {
   placed: PlacedModel[];
   selectedId: string | null;
-  onPlaneSelected: (plane: ARPlanePayload, reset: () => void) => void;
+  pendingItem: Furniture | null;
+  onSceneTap: (position: [number, number, number]) => void;
   onObjectTap: (id: string) => void;
   onObjectDrag: (id: string, pos: [number, number, number]) => void;
   onObjectPinch: (id: string, scale: number) => void;
   onObjectRotate: (id: string, rotY: number) => void;
+  markNodeTapped: () => void;
+  // Returns true (and clears the flag) if a child node already handled this tap
+  consumeNodeTap: () => boolean;
 };
 
-// ─── Per-object piece (inside the Viro scene) ────────────────────────────────
+// ─── Per-object piece ────────────────────────────────────────────────────────
 
 function FurniturePiece({
   model,
@@ -61,53 +55,69 @@ function FurniturePiece({
   model: PlacedModel;
   app: ARViroAppProps;
 }) {
-  // Scale: Viro accumulates getScaleFactor() natively → scaleFactor is cumulative from
-  // gesture start (e.g. 1.0 → 1.3 → 1.7). Capture the model scale at gesture start and
-  // multiply by the cumulative factor. Do NOT apply at pinchState=1 (value ≈ 1.0 but can
-  // cause a spurious state flush that disrupts the gesture).
-  const gestureBaseScaleRef = useRef(model.scale);
+  // Viro registers native gesture handlers ONCE at mount and never updates them
+  // when the JS callback prop changes. All mutable values used inside gesture
+  // handlers MUST be read from refs, not from the (stale) closure.
+  const modelRef = useRef(model);
+  modelRef.current = model;
+  const appRef = useRef(app);
+  appRef.current = app;
 
-  // Rotation: getRotateRadians() returns the per-frame angular delta in RADIANS between
-  // the current and previous touch-vector positions (incremental, not cumulative).
-  // We must accumulate these deltas ourselves and convert to degrees for ViroNode.rotation.
+  // Drag plane Y is locked at placement so the plane never shifts mid-drag
+  const dragPlaneY = useRef(model.position[1]);
+
+  // Gesture base values — captured fresh at gesture start via refs
+  const gestureBaseScaleRef = useRef(model.scale);
   const gestureBaseRotRef = useRef(model.rotationY);
-  const rotAccDegRef = useRef(0);
 
   return (
     <ViroNode
       position={model.position}
       rotation={[0, model.rotationY, 0]}
       scale={[model.scale, model.scale, model.scale]}
-      onTap={() => app.onObjectTap(model.id)}
+      onTap={() => {
+        // Mark this tap as consumed by a node BEFORE it bubbles to ViroARScene
+        appRef.current.markNodeTapped();
+        appRef.current.onObjectTap(modelRef.current.id);
+      }}
       dragType="FixedToPlane"
       dragPlane={{
-        planePoint: [0, model.position[1], 0],
+        planePoint: [0, dragPlaneY.current, 0],
         planeNormal: [0, 1, 0],
-        maxDistance: 10,
+        maxDistance: 20,
       }}
       onDrag={(dragToPos) =>
-        app.onObjectDrag(model.id, dragToPos as [number, number, number])
+        appRef.current.onObjectDrag(
+          modelRef.current.id,
+          dragToPos as [number, number, number],
+        )
       }
       onPinch={(pinchState, scaleFactor) => {
         if (pinchState === 1) {
-          // Capture scale at gesture start; skip applying — scaleFactor ≈ 1.0 here
-          gestureBaseScaleRef.current = model.scale;
+          // Capture the real current scale at gesture start
+          gestureBaseScaleRef.current = modelRef.current.scale;
           return;
         }
-        // scaleFactor is cumulative: apply against the frozen gesture-start base
-        const next = Math.max(0.04, Math.min(2.0, gestureBaseScaleRef.current * scaleFactor));
-        app.onObjectPinch(model.id, next);
+        // scaleFactor is cumulative from gesture start → multiply against base
+        const next = Math.max(
+          0.04,
+          Math.min(2.0, gestureBaseScaleRef.current * scaleFactor),
+        );
+        appRef.current.onObjectPinch(modelRef.current.id, next);
       }}
       onRotate={(rotateState, rotationFactor) => {
         if (rotateState === 1) {
-          // Capture rotation base and reset per-gesture accumulator
-          gestureBaseRotRef.current = model.rotationY;
-          rotAccDegRef.current = 0;
+          // Capture the real current rotation at gesture start
+          gestureBaseRotRef.current = modelRef.current.rotationY;
           return;
         }
-        // rotationFactor is an incremental per-frame delta in RADIANS → convert + accumulate
-        rotAccDegRef.current += (rotationFactor * 180) / Math.PI;
-        app.onObjectRotate(model.id, gestureBaseRotRef.current - rotAccDegRef.current);
+        // rotationFactor is CUMULATIVE from gesture start (in radians) — do NOT
+        // accumulate it again. Apply it directly against the frozen base angle.
+        const deltaDeg = (rotationFactor * 180) / Math.PI;
+        appRef.current.onObjectRotate(
+          modelRef.current.id,
+          gestureBaseRotRef.current - deltaDeg,
+        );
       }}
     >
       <Viro3DObject
@@ -119,7 +129,10 @@ function FurniturePiece({
           Toast.show({
             type: "error",
             text1: "Model failed to load",
-            text2: String((e as { nativeEvent?: { error?: string } }).nativeEvent?.error ?? model.modelUrl),
+            text2: String(
+              (e as { nativeEvent?: { error?: string } }).nativeEvent?.error ??
+                model.modelUrl,
+            ),
           })
         }
       />
@@ -134,14 +147,22 @@ function ARScene({
 }: {
   sceneNavigator: { viroAppProps: ARViroAppProps };
 }) {
-  const app = sceneNavigator.viroAppProps;
-  const selectorRef = useRef<ViroARPlaneSelector | null>(null);
+  // Viro's onTap native handler is registered once — keep a ref so it always
+  // reads the latest viroAppProps even as selected/pendingItem changes.
+  const appRef = useRef(sceneNavigator.viroAppProps);
+  appRef.current = sceneNavigator.viroAppProps;
 
   return (
-    <ViroARScene>
-      {/* Soft fill light */}
+    <ViroARScene
+      onTap={(position) => {
+        const app = appRef.current;
+        // If a child ViroNode already handled this tap, don't also place a new object
+        if (app.consumeNodeTap()) return;
+        if (!app.pendingItem) return;
+        app.onSceneTap(position as [number, number, number]);
+      }}
+    >
       <ViroAmbientLight color="#ffffff" intensity={200} />
-      {/* Key light from upper-front-right for depth */}
       <ViroDirectionalLight
         color="#fff8f0"
         direction={[0.3, -1, -0.4]}
@@ -149,32 +170,24 @@ function ARScene({
         shadowOpacity={0.45}
         shadowOrthographicSize={5}
       />
-      {/* Weaker back/rim light to avoid pure-black undersides */}
       <ViroDirectionalLight
         color="#d0e8ff"
         direction={[-0.2, 0.5, 0.8]}
         castsShadow={false}
       />
 
-      <ViroARPlaneSelector
-        ref={selectorRef}
-        alignment="Horizontal"
-        onPlaneSelected={(plane: ARPlanePayload) => {
-          app.onPlaneSelected(plane, () => selectorRef.current?.reset());
-        }}
-      />
-
-      {app.placed.map((model) => (
-        <FurniturePiece key={model.id} model={model} app={app} />
+      {sceneNavigator.viroAppProps.placed.map((model) => (
+        <FurniturePiece
+          key={model.id}
+          model={model}
+          app={sceneNavigator.viroAppProps}
+        />
       ))}
     </ViroARScene>
   );
 }
 
 // ─── Stable scene descriptor ─────────────────────────────────────────────────
-// Must live outside InteractiveAR so its reference never changes between renders.
-// Viro treats a changed `initialScene` object as a brand-new scene and resets
-// the entire AR context — wiping every placed object on each setState call.
 const INITIAL_SCENE = {
   scene: ARScene as unknown as () => React.JSX.Element,
 };
@@ -187,50 +200,62 @@ export function InteractiveAR() {
   const [placed, setPlaced] = React.useState<PlacedModel[]>([]);
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
 
+  // Debounce placement: Viro fires onTap twice per physical tap (touch-down +
+  // touch-up). Without this you'd place two objects per tap.
+  const lastPlacedAtRef = useRef(0);
+
+  // Throttle drag state updates to ~30fps — onDrag fires at 60fps and each
+  // setPlaced call re-renders every placed model.
+  const dragThrottleRef = useRef<Record<string, number>>({});
+
+  // Tap-bubbling suppression: ViroNode.onTap bubbles up to ViroARScene.onTap.
+  // When a placed object is tapped, we set this flag so the scene handler
+  // ignores the same event instead of also placing a new object.
+  const nodeTappedRef = useRef(false);
+
   React.useEffect(() => {
     if (error) {
       Toast.show({ type: "error", text1: "Furniture list", text2: error });
     }
   }, [error]);
 
-  // ── Placement ──────────────────────────────────────────────────────────────
+  // ── Tap-to-place ──────────────────────────────────────────────────────────
 
-  const onPlaneSelected = useCallback(
-    (plane: ARPlanePayload, resetSelector: () => void) => {
-      if (!selected) {
-        Toast.show({
-          type: "info",
-          text1: "Select furniture first",
-          text2: "Pick an item from the tray, then tap a detected surface.",
-        });
-        resetSelector();
-        return;
-      }
-      const pos = plane.position;
-      if (!Array.isArray(pos) || pos.length < 3) {
-        resetSelector();
-        return;
-      }
+  const onSceneTap = useCallback(
+    (position: [number, number, number]) => {
+      if (!selected) return;
+      const now = Date.now();
+      if (now - lastPlacedAtRef.current < 600) return; // debounce double-fire
+      lastPlacedAtRef.current = now;
+
       const newId = `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
       setPlaced((prev) => [
         ...prev,
         {
           id: newId,
-          position: [pos[0], pos[1], pos[2]],
+          position,
           rotationY: 0,
           scale: 0.2,
           modelUrl: selected.modelUrl,
           name: selected.name,
         },
       ]);
-      // Auto-select the newly placed piece so user can immediately adjust it
       setSelectedId(newId);
-      resetSelector();
     },
     [selected],
   );
 
   // ── Object manipulation ────────────────────────────────────────────────────
+
+  const markNodeTapped = useCallback(() => {
+    nodeTappedRef.current = true;
+  }, []);
+
+  const consumeNodeTap = useCallback(() => {
+    if (!nodeTappedRef.current) return false;
+    nodeTappedRef.current = false;
+    return true;
+  }, []);
 
   const onObjectTap = useCallback((id: string) => {
     setSelectedId((prev) => (prev === id ? null : id));
@@ -238,6 +263,9 @@ export function InteractiveAR() {
 
   const onObjectDrag = useCallback(
     (id: string, pos: [number, number, number]) => {
+      const now = Date.now();
+      if ((now - (dragThrottleRef.current[id] ?? 0)) < 33) return;
+      dragThrottleRef.current[id] = now;
       setPlaced((prev) =>
         prev.map((m) => (m.id === id ? { ...m, position: pos } : m)),
       );
@@ -257,19 +285,22 @@ export function InteractiveAR() {
     );
   }, []);
 
-  // ── viroAppProps (passed into the AR scene) ────────────────────────────────
+  // ── viroAppProps ───────────────────────────────────────────────────────────
 
   const viroAppProps = useMemo(
     () => ({
       placed,
       selectedId,
-      onPlaneSelected,
+      pendingItem: selected,
+      onSceneTap,
       onObjectTap,
       onObjectDrag,
       onObjectPinch,
       onObjectRotate,
+      markNodeTapped,
+      consumeNodeTap,
     }),
-    [placed, selectedId, onPlaneSelected, onObjectTap, onObjectDrag, onObjectPinch, onObjectRotate],
+    [placed, selectedId, selected, onSceneTap, onObjectTap, onObjectDrag, onObjectPinch, onObjectRotate, markNodeTapped, consumeNodeTap],
   );
 
   // ── Helpers ────────────────────────────────────────────────────────────────
@@ -308,7 +339,7 @@ export function InteractiveAR() {
         viroAppProps={viroAppProps}
       />
 
-      {/* ── Floating status bar ── */}
+      {/* ── Status bar ── */}
       <View style={styles.statusRow} pointerEvents="box-none">
         <View style={styles.statusPill} pointerEvents="none">
           {selectedPlaced ? (
@@ -321,8 +352,8 @@ export function InteractiveAR() {
           ) : (
             <Text style={styles.statusHint}>
               {selected
-                ? `Tap a surface to place "${selected.name}"`
-                : "Select furniture below"}
+                ? `Tap anywhere to place "${selected.name}"`
+                : "Select furniture below, then tap to place"}
             </Text>
           )}
         </View>
@@ -397,7 +428,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#0f0f12",
   },
 
-  // Status bar
   statusRow: {
     position: "absolute",
     top: 52,
@@ -439,7 +469,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
 
-  // Tray
   tray: {
     backgroundColor: "rgba(15,15,18,0.96)",
     borderTopWidth: StyleSheet.hairlineWidth,
@@ -474,7 +503,6 @@ const styles = StyleSheet.create({
     padding: 6,
   },
 
-  // Action buttons
   actions: {
     flexDirection: "row",
     paddingHorizontal: 16,
