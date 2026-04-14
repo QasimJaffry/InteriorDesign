@@ -89,3 +89,22 @@ export function bestDetectionFromLabels(
   }
   return null;
 }
+
+/** Returns all unique detected types above confidence threshold, ordered by confidence. */
+export function allDetectionsFromLabels(
+  labels: { text: string; confidence: number }[],
+): { type: string; confidence: number }[] {
+  if (!labels.length) return [];
+  const sorted = [...labels].sort((a, b) => b.confidence - a.confidence);
+  const seen = new Set<string>();
+  const results: { type: string; confidence: number }[] = [];
+  for (const label of sorted) {
+    if (label.confidence < MIN_CONFIDENCE) break;
+    const type = mapLabelToFurnitureType(label.text);
+    if (KNOWN_TYPES.has(type) && !seen.has(type)) {
+      seen.add(type);
+      results.push({ type, confidence: label.confidence });
+    }
+  }
+  return results;
+}

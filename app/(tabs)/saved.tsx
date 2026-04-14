@@ -1,3 +1,4 @@
+import Feather from "@expo/vector-icons/Feather";
 import { Link } from "expo-router";
 import React, { useEffect } from "react";
 import {
@@ -36,11 +37,13 @@ export default function SavedScreen() {
   if (savedItems.length === 0) {
     return (
       <View style={styles.center}>
-        <Text style={styles.emptyEyebrow}>Collection</Text>
+        <View style={styles.emptyIcon}>
+          <Feather name="heart" size={32} color={palette.sage} />
+        </View>
         <Text style={styles.emptyTitle}>Nothing saved yet</Text>
         <Text style={styles.emptySub}>
-          Heart pieces from the catalogue or after a scan — they will appear
-          here for AR placement and checkout prep.
+          Heart pieces from the catalogue or after a scan — they'll appear here
+          for AR placement and checkout prep.
         </Text>
         <Link href="/(tabs)" asChild>
           <Pressable style={styles.primary}>
@@ -53,12 +56,21 @@ export default function SavedScreen() {
 
   return (
     <View style={styles.container}>
+      {/* Collection count header */}
+      <View style={styles.header}>
+        <Text style={styles.headerEyebrow}>Your collection</Text>
+        <Text style={styles.headerCount}>
+          {savedItems.length} {savedItems.length === 1 ? "piece" : "pieces"}
+        </Text>
+      </View>
+
       <FlatList
         data={savedItems}
         keyExtractor={(item) => item.id}
         numColumns={2}
         columnWrapperStyle={styles.row}
         contentContainerStyle={styles.list}
+        showsVerticalScrollIndicator={false}
         renderItem={({ item }) => (
           <FurnitureCard
             item={item}
@@ -86,11 +98,36 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: palette.bg,
   },
+  header: {
+    paddingHorizontal: space.md + 2,
+    paddingTop: space.md,
+    paddingBottom: space.sm,
+    flexDirection: "row",
+    alignItems: "flex-end",
+    justifyContent: "space-between",
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: palette.borderSubtle,
+    marginBottom: space.xs,
+  },
+  headerEyebrow: {
+    fontFamily: fontFamily.displaySemibold,
+    fontSize: 26,
+    color: palette.text,
+    letterSpacing: -0.2,
+  },
+  headerCount: {
+    fontFamily: fontFamily.sans,
+    fontSize: 13,
+    color: palette.textMuted,
+    marginBottom: 3,
+  },
   list: {
-    paddingBottom: space.lg,
+    paddingHorizontal: 6,
+    paddingBottom: space.xl,
+    paddingTop: space.xs,
   },
   row: {
-    paddingHorizontal: 8,
+    gap: 0,
   },
   center: {
     flex: 1,
@@ -99,13 +136,16 @@ const styles = StyleSheet.create({
     padding: space.lg,
     backgroundColor: palette.bg,
   },
-  emptyEyebrow: {
-    fontFamily: fontFamily.sansMedium,
-    color: palette.textMuted,
-    fontSize: 11,
-    letterSpacing: 2,
-    textTransform: "uppercase",
-    marginBottom: space.sm,
+  emptyIcon: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: palette.sageMuted,
+    borderWidth: 1,
+    borderColor: palette.sageBorder,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: space.lg,
   },
   emptyTitle: {
     fontFamily: fontFamily.displaySemibold,
@@ -121,17 +161,18 @@ const styles = StyleSheet.create({
     textAlign: "center",
     lineHeight: 23,
     marginBottom: space.lg,
-    maxWidth: 320,
+    maxWidth: 300,
   },
   primary: {
     backgroundColor: palette.sage,
-    paddingHorizontal: space.lg,
-    paddingVertical: 16,
-    borderRadius: radius.md,
+    paddingHorizontal: space.xl,
+    paddingVertical: 15,
+    borderRadius: radius.full,
   },
   primaryText: {
     fontFamily: fontFamily.sansSemiBold,
     color: palette.bg,
-    fontSize: 16,
+    fontSize: 15,
+    letterSpacing: 0.2,
   },
 });

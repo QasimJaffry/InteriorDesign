@@ -29,7 +29,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   android: {
     adaptiveIcon: {
       foregroundImage: "./assets/images/adaptive-icon.png",
-      backgroundColor: "#0a0c0f",
+      backgroundColor: "#241e82",
     },
     package: "com.interio.app",
     permissions: ["CAMERA", "RECORD_AUDIO"],

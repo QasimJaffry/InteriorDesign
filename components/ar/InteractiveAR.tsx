@@ -1,4 +1,4 @@
-// @ts-nocheck — ViroReact’s published typings omit gesture props (onTap, onDrag, etc.) present at runtime.
+// @ts-nocheck — ViroReact's published typings omit gesture props (onTap, onDrag, etc.) present at runtime.
 import {
   Viro3DObject,
   ViroARScene,
@@ -7,6 +7,7 @@ import {
   ViroDirectionalLight,
   ViroNode,
 } from "@reactvision/react-viro";
+import Feather from "@expo/vector-icons/Feather";
 import React, { useCallback, useMemo, useRef } from "react";
 import {
   ActivityIndicator,
@@ -44,7 +45,6 @@ type ARViroAppProps = {
   onObjectPinch: (id: string, scale: number) => void;
   onObjectRotate: (id: string, rotY: number) => void;
   markNodeTapped: () => void;
-  // Returns true (and clears the flag) if a child node already handled this tap
   consumeNodeTap: () => boolean;
 };
 
@@ -57,18 +57,12 @@ function FurniturePiece({
   model: PlacedModel;
   app: ARViroAppProps;
 }) {
-  // Viro registers native gesture handlers ONCE at mount and never updates them
-  // when the JS callback prop changes. All mutable values used inside gesture
-  // handlers MUST be read from refs, not from the (stale) closure.
   const modelRef = useRef(model);
   modelRef.current = model;
   const appRef = useRef(app);
   appRef.current = app;
 
-  // Drag plane Y is locked at placement so the plane never shifts mid-drag
   const dragPlaneY = useRef(model.position[1]);
-
-  // Gesture base values — captured fresh at gesture start via refs
   const gestureBaseScaleRef = useRef(model.scale);
   const gestureBaseRotRef = useRef(model.rotationY);
 
@@ -78,7 +72,6 @@ function FurniturePiece({
       rotation={[0, model.rotationY, 0]}
       scale={[model.scale, model.scale, model.scale]}
       onTap={() => {
-        // Mark this tap as consumed by a node BEFORE it bubbles to ViroARScene
         appRef.current.markNodeTapped();
         appRef.current.onObjectTap(modelRef.current.id);
       }}
@@ -96,11 +89,9 @@ function FurniturePiece({
       }
       onPinch={(pinchState, scaleFactor) => {
         if (pinchState === 1) {
-          // Capture the real current scale at gesture start
           gestureBaseScaleRef.current = modelRef.current.scale;
           return;
         }
-        // scaleFactor is cumulative from gesture start → multiply against base
         const next = Math.max(
           0.04,
           Math.min(2.0, gestureBaseScaleRef.current * scaleFactor),
@@ -109,12 +100,9 @@ function FurniturePiece({
       }}
       onRotate={(rotateState, rotationFactor) => {
         if (rotateState === 1) {
-          // Capture the real current rotation at gesture start
           gestureBaseRotRef.current = modelRef.current.rotationY;
           return;
         }
-        // rotationFactor is CUMULATIVE from gesture start (in radians) — do NOT
-        // accumulate it again. Apply it directly against the frozen base angle.
         const deltaDeg = (rotationFactor * 180) / Math.PI;
         appRef.current.onObjectRotate(
           modelRef.current.id,
@@ -149,8 +137,6 @@ function ARScene({
 }: {
   sceneNavigator: { viroAppProps: ARViroAppProps };
 }) {
-  // Viro's onTap native handler is registered once — keep a ref so it always
-  // reads the latest viroAppProps even as selected/pendingItem changes.
   const appRef = useRef(sceneNavigator.viroAppProps);
   appRef.current = sceneNavigator.viroAppProps;
 
@@ -158,7 +144,6 @@ function ARScene({
     <ViroARScene
       onTap={(position) => {
         const app = appRef.current;
-        // If a child ViroNode already handled this tap, don't also place a new object
         if (app.consumeNodeTap()) return;
         if (!app.pendingItem) return;
         app.onSceneTap(position as [number, number, number]);
@@ -177,7 +162,6 @@ function ARScene({
         direction={[-0.2, 0.5, 0.8]}
         castsShadow={false}
       />
-
       {sceneNavigator.viroAppProps.placed.map((model) => (
         <FurniturePiece
           key={model.id}
@@ -189,7 +173,6 @@ function ARScene({
   );
 }
 
-// ─── Stable scene descriptor ─────────────────────────────────────────────────
 const INITIAL_SCENE = {
   scene: ARScene as unknown as () => React.JSX.Element,
 };
@@ -202,17 +185,8 @@ export function InteractiveAR() {
   const [placed, setPlaced] = React.useState<PlacedModel[]>([]);
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
 
-  // Debounce placement: Viro fires onTap twice per physical tap (touch-down +
-  // touch-up). Without this you'd place two objects per tap.
   const lastPlacedAtRef = useRef(0);
-
-  // Throttle drag state updates to ~30fps — onDrag fires at 60fps and each
-  // setPlaced call re-renders every placed model.
   const dragThrottleRef = useRef<Record<string, number>>({});
-
-  // Tap-bubbling suppression: ViroNode.onTap bubbles up to ViroARScene.onTap.
-  // When a placed object is tapped, we set this flag so the scene handler
-  // ignores the same event instead of also placing a new object.
   const nodeTappedRef = useRef(false);
 
   React.useEffect(() => {
@@ -221,38 +195,23 @@ export function InteractiveAR() {
     }
   }, [error]);
 
-  // ── Tap-to-place ──────────────────────────────────────────────────────────
-
   const onSceneTap = useCallback(
     (position: [number, number, number]) => {
       if (!selected) return;
       const now = Date.now();
-      if (now - lastPlacedAtRef.current < 600) return; // debounce double-fire
+      if (now - lastPlacedAtRef.current < 600) return;
       lastPlacedAtRef.current = now;
-
       const newId = `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
       setPlaced((prev) => [
         ...prev,
-        {
-          id: newId,
-          position,
-          rotationY: 0,
-          scale: 0.2,
-          modelUrl: selected.modelUrl,
-          name: selected.name,
-        },
+        { id: newId, position, rotationY: 0, scale: 0.2, modelUrl: selected.modelUrl, name: selected.name },
       ]);
       setSelectedId(newId);
     },
     [selected],
   );
 
-  // ── Object manipulation ────────────────────────────────────────────────────
-
-  const markNodeTapped = useCallback(() => {
-    nodeTappedRef.current = true;
-  }, []);
-
+  const markNodeTapped = useCallback(() => { nodeTappedRef.current = true; }, []);
   const consumeNodeTap = useCallback(() => {
     if (!nodeTappedRef.current) return false;
     nodeTappedRef.current = false;
@@ -263,49 +222,25 @@ export function InteractiveAR() {
     setSelectedId((prev) => (prev === id ? null : id));
   }, []);
 
-  const onObjectDrag = useCallback(
-    (id: string, pos: [number, number, number]) => {
-      const now = Date.now();
-      if ((now - (dragThrottleRef.current[id] ?? 0)) < 33) return;
-      dragThrottleRef.current[id] = now;
-      setPlaced((prev) =>
-        prev.map((m) => (m.id === id ? { ...m, position: pos } : m)),
-      );
-    },
-    [],
-  );
+  const onObjectDrag = useCallback((id: string, pos: [number, number, number]) => {
+    const now = Date.now();
+    if ((now - (dragThrottleRef.current[id] ?? 0)) < 33) return;
+    dragThrottleRef.current[id] = now;
+    setPlaced((prev) => prev.map((m) => (m.id === id ? { ...m, position: pos } : m)));
+  }, []);
 
   const onObjectPinch = useCallback((id: string, scale: number) => {
-    setPlaced((prev) =>
-      prev.map((m) => (m.id === id ? { ...m, scale } : m)),
-    );
+    setPlaced((prev) => prev.map((m) => (m.id === id ? { ...m, scale } : m)));
   }, []);
 
   const onObjectRotate = useCallback((id: string, rotY: number) => {
-    setPlaced((prev) =>
-      prev.map((m) => (m.id === id ? { ...m, rotationY: rotY } : m)),
-    );
+    setPlaced((prev) => prev.map((m) => (m.id === id ? { ...m, rotationY: rotY } : m)));
   }, []);
 
-  // ── viroAppProps ───────────────────────────────────────────────────────────
-
   const viroAppProps = useMemo(
-    () => ({
-      placed,
-      selectedId,
-      pendingItem: selected,
-      onSceneTap,
-      onObjectTap,
-      onObjectDrag,
-      onObjectPinch,
-      onObjectRotate,
-      markNodeTapped,
-      consumeNodeTap,
-    }),
+    () => ({ placed, selectedId, pendingItem: selected, onSceneTap, onObjectTap, onObjectDrag, onObjectPinch, onObjectRotate, markNodeTapped, consumeNodeTap }),
     [placed, selectedId, selected, onSceneTap, onObjectTap, onObjectDrag, onObjectPinch, onObjectRotate, markNodeTapped, consumeNodeTap],
   );
-
-  // ── Helpers ────────────────────────────────────────────────────────────────
 
   const selectedPlaced = placed.find((p) => p.id === selectedId);
 
@@ -322,8 +257,6 @@ export function InteractiveAR() {
     setPlaced([]);
     setSelectedId(null);
   }, []);
-
-  // ── Render ────────────────────────────────────────────────────────────────
 
   if (loading) {
     return (
@@ -346,32 +279,66 @@ export function InteractiveAR() {
         <View style={styles.statusPill} pointerEvents="none">
           {selectedPlaced ? (
             <>
-              <Text style={styles.statusTitle}>{selectedPlaced.name}</Text>
-              <Text style={styles.statusHint}>
-                Drag · Pinch to scale · Twist to rotate
-              </Text>
+              <View style={styles.statusDot} />
+              <View>
+                <Text style={styles.statusTitle}>{selectedPlaced.name}</Text>
+                <Text style={styles.statusHint}>Drag · Pinch · Twist to rotate</Text>
+              </View>
             </>
           ) : (
-            <Text style={styles.statusHint}>
-              {selected
-                ? `Tap anywhere to place "${selected.name}"`
-                : "Select furniture below, then tap to place"}
-            </Text>
+            <>
+              <View style={[styles.statusDot, styles.statusDotIdle]} />
+              <Text style={styles.statusHint}>
+                {selected
+                  ? `Tap anywhere to place "${selected.name}"`
+                  : "Select furniture below, then tap to place"}
+              </Text>
+            </>
           )}
         </View>
 
         {selectedPlaced && (
-          <Pressable
-            style={styles.doneBtn}
-            onPress={() => setSelectedId(null)}
-          >
+          <Pressable style={styles.doneBtn} onPress={() => setSelectedId(null)}>
             <Text style={styles.doneBtnText}>Done</Text>
           </Pressable>
         )}
       </View>
 
-      {/* ── Furniture tray ── */}
+      {/* ── Bottom tray ── */}
       <View style={styles.tray}>
+        {/* Tray header: title + action icon buttons */}
+        <View style={styles.trayHeader}>
+          <Text style={styles.trayTitle}>
+            {selected ? selected.name : "Choose furniture"}
+          </Text>
+          <View style={styles.trayActions}>
+            <Pressable
+              style={[styles.iconBtn, !placed.length && styles.iconBtnDisabled]}
+              onPress={undo}
+              disabled={!placed.length}
+            >
+              <Feather name="corner-up-left" size={18} color={palette.text} />
+            </Pressable>
+            <Pressable
+              style={[styles.iconBtn, styles.iconBtnDanger, !placed.length && styles.iconBtnDisabled]}
+              onPress={clearAll}
+              disabled={!placed.length}
+            >
+              <Feather name="trash-2" size={18} color={palette.danger} />
+            </Pressable>
+          </View>
+        </View>
+
+        {/* Placed count badge */}
+        {placed.length > 0 && (
+          <View style={styles.placedBadge} pointerEvents="none">
+            <Text style={styles.placedBadgeText}>
+              {placed.length} {placed.length === 1 ? "item" : "items"} placed
+            </Text>
+          </View>
+        )}
+
+        {/* Horizontal furniture list */}
         <FlatList
           horizontal
           data={items}
@@ -382,36 +349,27 @@ export function InteractiveAR() {
             const active = selected?.id === item.id;
             return (
               <Pressable
-                onPress={() =>
-                  setSelected((s) => (s?.id === item.id ? null : item))
-                }
+                onPress={() => setSelected((s) => (s?.id === item.id ? null : item))}
                 style={[styles.trayItem, active && styles.trayItemActive]}
               >
                 <Image source={{ uri: item.imageUrl }} style={styles.trayImg} />
-                <Text style={styles.trayName} numberOfLines={1}>
-                  {item.name}
-                </Text>
+                <View style={styles.trayMeta}>
+                  <Text style={styles.trayType} numberOfLines={1}>
+                    {item.type}
+                  </Text>
+                  <Text style={styles.trayName} numberOfLines={1}>
+                    {item.name}
+                  </Text>
+                </View>
+                {active && (
+                  <View style={styles.trayCheck}>
+                    <Feather name="check" size={12} color={palette.white} />
+                  </View>
+                )}
               </Pressable>
             );
           }}
         />
-
-        <View style={styles.actions}>
-          <Pressable
-            style={[styles.actionBtn, !placed.length && styles.actionBtnDisabled]}
-            onPress={undo}
-            disabled={!placed.length}
-          >
-            <Text style={styles.actionText}>↩  Undo</Text>
-          </Pressable>
-          <Pressable
-            style={[styles.actionBtn, !placed.length && styles.actionBtnDisabled]}
-            onPress={clearAll}
-            disabled={!placed.length}
-          >
-            <Text style={styles.actionText}>✕  Clear all</Text>
-          </Pressable>
-        </View>
       </View>
     </View>
   );
@@ -422,7 +380,6 @@ export function InteractiveAR() {
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: palette.black },
   ar: { flex: 1 },
-
   center: {
     flex: 1,
     justifyContent: "center",
@@ -430,6 +387,7 @@ const styles = StyleSheet.create({
     backgroundColor: palette.bg,
   },
 
+  // ── Status bar ────────────────────────────────────────────────────────────
   statusRow: {
     position: "absolute",
     top: 52,
@@ -441,55 +399,118 @@ const styles = StyleSheet.create({
   },
   statusPill: {
     flex: 1,
-    backgroundColor: palette.overlay,
-    borderRadius: radius.lg,
-    paddingHorizontal: space.md,
-    paddingVertical: space.sm + 2,
+    flexDirection: "row",
     alignItems: "center",
+    gap: 10,
+    backgroundColor: palette.overlay,
+    borderRadius: radius.xl,
+    paddingHorizontal: space.md,
+    paddingVertical: 12,
     borderWidth: 1,
-    borderColor: palette.border,
+    borderColor: "rgba(255, 255, 255, 0.15)",
+  },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: palette.sage,
+    flexShrink: 0,
+  },
+  statusDotIdle: {
+    backgroundColor: palette.ice,
   },
   statusTitle: {
     fontFamily: fontFamily.sansSemiBold,
     color: palette.white,
     fontSize: 14,
-    marginBottom: 2,
+    marginBottom: 1,
   },
   statusHint: {
     fontFamily: fontFamily.sans,
-    color: palette.textSecondary,
+    color: "rgba(255, 255, 255, 0.6)",
     fontSize: 12,
-    textAlign: "center",
     lineHeight: 17,
   },
   doneBtn: {
     backgroundColor: palette.sage,
-    borderRadius: radius.lg,
+    borderRadius: radius.full,
     paddingHorizontal: space.md,
-    paddingVertical: space.sm + 2,
+    paddingVertical: 12,
     justifyContent: "center",
   },
   doneBtnText: {
     fontFamily: fontFamily.sansSemiBold,
-    color: palette.bg,
+    color: palette.white,
     fontSize: 14,
   },
 
+  // ── Bottom tray ───────────────────────────────────────────────────────────
   tray: {
-    backgroundColor: palette.overlay,
-    borderTopWidth: StyleSheet.hairlineWidth,
+    backgroundColor: palette.elevated,
+    borderTopWidth: 1,
     borderTopColor: palette.border,
     paddingTop: space.sm,
-    paddingBottom: space.md,
+    paddingBottom: space.lg,
   },
+  trayHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: space.md,
+    marginBottom: space.sm,
+  },
+  trayTitle: {
+    fontFamily: fontFamily.displaySemibold,
+    color: palette.text,
+    fontSize: 18,
+    flex: 1,
+  },
+  trayActions: {
+    flexDirection: "row",
+    gap: space.xs,
+  },
+  iconBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: palette.surface,
+    borderWidth: 1,
+    borderColor: palette.border,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  iconBtnDanger: {
+    borderColor: "rgba(212, 56, 56, 0.3)",
+    backgroundColor: "rgba(212, 56, 56, 0.08)",
+  },
+  iconBtnDisabled: {
+    opacity: 0.3,
+  },
+  placedBadge: {
+    alignSelf: "flex-start",
+    marginHorizontal: space.md,
+    marginBottom: space.sm,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: radius.full,
+    backgroundColor: palette.sageMuted,
+    borderWidth: 1,
+    borderColor: palette.sageBorder,
+  },
+  placedBadgeText: {
+    fontFamily: fontFamily.sansMedium,
+    color: palette.sage,
+    fontSize: 12,
+  },
+
+  // Tray items
   trayList: {
-    paddingHorizontal: space.md - 4,
+    paddingHorizontal: space.md,
     gap: space.sm,
   },
   trayItem: {
-    width: 88,
-    marginHorizontal: 4,
-    borderRadius: radius.md,
+    width: 96,
+    borderRadius: radius.lg,
     overflow: "hidden",
     backgroundColor: palette.surface,
     borderWidth: 2,
@@ -497,38 +518,40 @@ const styles = StyleSheet.create({
   },
   trayItemActive: {
     borderColor: palette.sage,
+    backgroundColor: palette.surface2,
   },
   trayImg: {
     width: "100%",
-    height: 72,
+    height: 76,
     backgroundColor: palette.surface2,
+  },
+  trayMeta: {
+    padding: 7,
+    paddingBottom: 8,
+  },
+  trayType: {
+    fontFamily: fontFamily.sansMedium,
+    color: palette.sage,
+    fontSize: 9,
+    textTransform: "uppercase",
+    letterSpacing: 0.6,
+    marginBottom: 2,
   },
   trayName: {
-    fontFamily: fontFamily.sans,
-    color: palette.textSecondary,
-    fontSize: 11,
-    padding: 6,
-  },
-
-  actions: {
-    flexDirection: "row",
-    paddingHorizontal: space.md,
-    marginTop: space.sm,
-    gap: space.sm,
-  },
-  actionBtn: {
-    flex: 1,
-    paddingVertical: space.md - 2,
-    borderRadius: radius.md,
-    backgroundColor: palette.surface2,
-    alignItems: "center",
-  },
-  actionBtnDisabled: {
-    opacity: 0.35,
-  },
-  actionText: {
-    fontFamily: fontFamily.sansSemiBold,
+    fontFamily: fontFamily.sansMedium,
     color: palette.text,
-    fontSize: 14,
+    fontSize: 11,
+    lineHeight: 15,
+  },
+  trayCheck: {
+    position: "absolute",
+    top: 6,
+    right: 6,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: palette.sage,
+    alignItems: "center",
+    justifyContent: "center",
   },
 });

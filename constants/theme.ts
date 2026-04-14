@@ -1,31 +1,46 @@
 /**
- * INTERIO — slate + sage, editorial / spatial product UI.
+ * INTERIO — clean white + rich violet, editorial light UI.
  * Single source of truth for colors, type roles, radius, and spacing.
  */
 
 export const palette = {
-  bg: "#0a0c0f",
-  bgMuted: "#0e1218",
-  elevated: "#121820",
-  surface: "#181f28",
-  surface2: "#1e2732",
-  border: "#2a3442",
-  borderSubtle: "#222a35",
-  text: "#eef2f7",
-  textSecondary: "#9aa5b5",
-  textMuted: "#6b7686",
-  sage: "#7d9b84",
-  sageDeep: "#5c7362",
-  sageMuted: "rgba(125, 155, 132, 0.12)",
-  sageBorder: "rgba(125, 155, 132, 0.35)",
-  link: "#a3c4b8",
-  linkHover: "#c5ddd4",
-  ice: "#b8d4e8",
-  danger: "#d48484",
-  dangerBg: "rgba(212, 132, 132, 0.12)",
-  infoBg: "#141c24",
-  infoBorder: "#2f3c4a",
-  overlay: "rgba(8, 10, 13, 0.92)",
+  // ── Backgrounds — pure white ────────────────────────────────────────────────
+  bg: "#ffffff",
+  bgMuted: "#f7f8fc",
+  elevated: "#f2f3f9",
+  surface: "#eef0f8",
+  surface2: "#e4e7f2",
+  border: "#d8dced",
+  borderSubtle: "#e8eaf5",
+
+  // ── Text — deep charcoal-navy ───────────────────────────────────────────────
+  text: "#0e1020",
+  textSecondary: "#4a5270",
+  textMuted: "#8890b0",
+
+  // ── Primary accent — rich indigo-violet ─────────────────────────────────────
+  sage: "#5c51e0",
+  sageDeep: "#4339bc",
+  sageMuted: "rgba(92, 81, 224, 0.10)",
+  sageBorder: "rgba(92, 81, 224, 0.24)",
+
+  // ── Links ───────────────────────────────────────────────────────────────────
+  link: "#5c51e0",
+  linkHover: "#4339bc",
+
+  // ── Secondary accent — teal ─────────────────────────────────────────────────
+  ice: "#2ab5aa",
+
+  // ── Danger ──────────────────────────────────────────────────────────────────
+  danger: "#d43838",
+  dangerBg: "rgba(212, 56, 56, 0.08)",
+
+  // ── Info / banners ──────────────────────────────────────────────────────────
+  infoBg: "#f0f2fa",
+  infoBorder: "#d8dced",
+
+  // ── Utilities ───────────────────────────────────────────────────────────────
+  overlay: "rgba(14, 16, 32, 0.85)",
   black: "#000000",
   white: "#ffffff",
 } as const;
@@ -46,6 +61,7 @@ export const radius = {
   md: 12,
   lg: 16,
   xl: 20,
+  xxl: 28,
   full: 999,
 } as const;
 

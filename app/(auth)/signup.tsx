@@ -4,6 +4,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -43,52 +44,78 @@ export default function SignupScreen() {
       style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-      <View style={styles.inner}>
-        <Text style={styles.lead}>
-          Create a profile to sync saved pieces and scans across devices.
-        </Text>
+      <ScrollView
+        contentContainerStyle={styles.inner}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.headerKicker}>Create account</Text>
+          <Text style={styles.headerTitle}>Join INTERIO</Text>
+          <View style={styles.headerDivider} />
+          <Text style={styles.headerSub}>
+            Sync saved pieces and scans across all your devices.
+          </Text>
+        </View>
 
-        <Text style={styles.label}>Name</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Your name"
-          placeholderTextColor={palette.textMuted}
-          value={name}
-          onChangeText={setName}
-        />
-        <Text style={styles.label}>Email</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          placeholderTextColor={palette.textMuted}
-          autoCapitalize="none"
-          keyboardType="email-address"
-          value={email}
-          onChangeText={setEmail}
-        />
-        <Text style={styles.label}>Password</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Password (6+ characters)"
-          placeholderTextColor={palette.textMuted}
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-        />
-        <Pressable
-          style={[styles.primary, busy && styles.disabled]}
-          onPress={onSubmit}
-          disabled={busy}
-        >
-          <Text style={styles.primaryText}>Create account</Text>
-        </Pressable>
+        {/* Form */}
+        <View style={styles.form}>
+          <View style={styles.field}>
+            <Text style={styles.label}>Name</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Your name"
+              placeholderTextColor={palette.textMuted}
+              value={name}
+              onChangeText={setName}
+            />
+          </View>
+
+          <View style={styles.field}>
+            <Text style={styles.label}>Email</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="you@example.com"
+              placeholderTextColor={palette.textMuted}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              value={email}
+              onChangeText={setEmail}
+            />
+          </View>
+
+          <View style={styles.field}>
+            <Text style={styles.label}>Password</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="6+ characters"
+              placeholderTextColor={palette.textMuted}
+              secureTextEntry
+              value={password}
+              onChangeText={setPassword}
+            />
+          </View>
+
+          <Pressable
+            style={[styles.primary, busy && styles.disabled]}
+            onPress={onSubmit}
+            disabled={busy}
+          >
+            <Text style={styles.primaryText}>
+              {busy ? "Creating account…" : "Create account"}
+            </Text>
+          </Pressable>
+        </View>
+
+        {/* Footer */}
         <Link href="/login" asChild>
-          <Pressable style={styles.row}>
-            <Text style={styles.muted}>Already have an account? </Text>
-            <Text style={styles.link}>Sign in</Text>
+          <Pressable style={styles.footer}>
+            <Text style={styles.footerMuted}>Already have an account? </Text>
+            <Text style={styles.footerLink}>Sign in</Text>
           </Pressable>
         </Link>
-      </View>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }
@@ -99,31 +126,70 @@ const styles = StyleSheet.create({
     backgroundColor: palette.bg,
   },
   inner: {
-    flex: 1,
-    padding: space.lg,
-    paddingTop: space.md,
-    gap: space.xs,
+    paddingHorizontal: space.lg,
+    paddingTop: space.xl + space.lg,
+    paddingBottom: space.xl * 2,
+    gap: space.xl,
+    flexGrow: 1,
+    justifyContent: "center",
   },
-  lead: {
+
+  // Header
+  header: {
+    gap: 4,
+  },
+  headerKicker: {
+    fontFamily: fontFamily.sansMedium,
+    fontSize: 11,
+    letterSpacing: 3,
+    textTransform: "uppercase",
+    color: palette.sage,
+    opacity: 0.85,
+    marginBottom: space.xs,
+  },
+  headerTitle: {
+    fontFamily: fontFamily.displayBold,
+    fontSize: 40,
+    color: palette.text,
+    letterSpacing: 2,
+    lineHeight: 46,
+  },
+  headerDivider: {
+    width: 32,
+    height: 2,
+    backgroundColor: palette.sage,
+    opacity: 0.5,
+    borderRadius: 1,
+    marginVertical: space.sm,
+  },
+  headerSub: {
     fontFamily: fontFamily.sans,
     fontSize: 15,
-    lineHeight: 22,
+    lineHeight: 23,
     color: palette.textSecondary,
-    marginBottom: space.md,
+  },
+
+  // Form
+  form: {
+    gap: space.sm,
+  },
+  field: {
+    gap: 6,
   },
   label: {
     fontFamily: fontFamily.sansMedium,
     color: palette.textMuted,
-    fontSize: 12,
+    fontSize: 11,
     textTransform: "uppercase",
-    letterSpacing: 0.6,
-    marginTop: space.sm,
+    letterSpacing: 1,
+    paddingLeft: 2,
   },
   input: {
     fontFamily: fontFamily.sans,
     backgroundColor: palette.surface,
-    borderRadius: radius.md,
-    padding: space.md,
+    borderRadius: radius.lg,
+    paddingHorizontal: space.md,
+    paddingVertical: 14,
     fontSize: 16,
     color: palette.text,
     borderWidth: 1,
@@ -132,30 +198,34 @@ const styles = StyleSheet.create({
   primary: {
     backgroundColor: palette.sage,
     paddingVertical: 16,
-    borderRadius: radius.md,
+    borderRadius: radius.full,
     alignItems: "center",
-    marginTop: space.lg,
+    marginTop: space.sm,
   },
   primaryText: {
     fontFamily: fontFamily.sansSemiBold,
     color: palette.bg,
-    fontSize: 17,
+    fontSize: 16,
+    letterSpacing: 0.3,
   },
   disabled: {
-    opacity: 0.55,
+    opacity: 0.5,
   },
-  link: {
-    fontFamily: fontFamily.sansSemiBold,
-    color: palette.link,
-    fontSize: 15,
+
+  // Footer
+  footer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    paddingVertical: space.sm,
   },
-  muted: {
+  footerMuted: {
     fontFamily: fontFamily.sans,
     color: palette.textMuted,
     fontSize: 15,
   },
-  row: {
-    flexDirection: "row",
-    marginTop: space.md,
+  footerLink: {
+    fontFamily: fontFamily.sansSemiBold,
+    color: palette.link,
+    fontSize: 15,
   },
 });

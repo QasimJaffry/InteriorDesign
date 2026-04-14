@@ -37,45 +37,69 @@ export default function LoginScreen() {
       style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-      <View style={styles.accentLine} />
-      <View style={styles.inner}>
-        <Text style={styles.kicker}>Spatial interior studio</Text>
-        <Text style={styles.title}>Interio</Text>
-        <Text style={styles.sub}>Welcome back — pick up where you left off.</Text>
+      {/* Top accent bar */}
+      <View style={styles.accentBar} />
 
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          placeholderTextColor={palette.textMuted}
-          autoCapitalize="none"
-          keyboardType="email-address"
-          value={email}
-          onChangeText={setEmail}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          placeholderTextColor={palette.textMuted}
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-        />
-        <Pressable
-          style={[styles.primary, busy && styles.disabled]}
-          onPress={onSubmit}
-          disabled={busy}
-        >
-          <Text style={styles.primaryText}>Sign in</Text>
-        </Pressable>
-        <Link href="/forgot-password" asChild>
-          <Pressable>
-            <Text style={styles.link}>Forgot password?</Text>
+      <View style={styles.inner}>
+        {/* Brand mark */}
+        <View style={styles.brand}>
+          <Text style={styles.brandKicker}>Spatial interior studio</Text>
+          <Text style={styles.brandTitle}>INTERIO</Text>
+          <View style={styles.brandDivider} />
+          <Text style={styles.brandSub}>
+            Welcome back — pick up where you left off.
+          </Text>
+        </View>
+
+        {/* Form */}
+        <View style={styles.form}>
+          <View style={styles.field}>
+            <Text style={styles.label}>Email</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="you@example.com"
+              placeholderTextColor={palette.textMuted}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              value={email}
+              onChangeText={setEmail}
+            />
+          </View>
+
+          <View style={styles.field}>
+            <Text style={styles.label}>Password</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="••••••••"
+              placeholderTextColor={palette.textMuted}
+              secureTextEntry
+              value={password}
+              onChangeText={setPassword}
+            />
+          </View>
+
+          <Pressable
+            style={[styles.primary, busy && styles.disabled]}
+            onPress={onSubmit}
+            disabled={busy}
+          >
+            <Text style={styles.primaryText}>
+              {busy ? "Signing in…" : "Sign in"}
+            </Text>
           </Pressable>
-        </Link>
+
+          <Link href="/forgot-password" asChild>
+            <Pressable style={styles.forgotRow}>
+              <Text style={styles.forgotText}>Forgot password?</Text>
+            </Pressable>
+          </Link>
+        </View>
+
+        {/* Footer */}
         <Link href="/signup" asChild>
-          <Pressable style={styles.row}>
-            <Text style={styles.muted}>No account? </Text>
-            <Text style={styles.linkInline}>Sign up</Text>
+          <Pressable style={styles.footer}>
+            <Text style={styles.footerMuted}>Don't have an account? </Text>
+            <Text style={styles.footerLink}>Create one</Text>
           </Pressable>
         </Link>
       </View>
@@ -88,44 +112,75 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: palette.bg,
   },
-  accentLine: {
-    height: 3,
+  accentBar: {
+    height: 2,
     backgroundColor: palette.sage,
-    opacity: 0.85,
+    opacity: 0.75,
   },
   inner: {
     flex: 1,
-    padding: space.lg,
+    paddingHorizontal: space.lg,
+    paddingVertical: space.xl,
     justifyContent: "center",
-    gap: space.sm,
+    gap: space.xl,
   },
-  kicker: {
+
+  // Brand block
+  brand: {
+    gap: 4,
+  },
+  brandKicker: {
     fontFamily: fontFamily.sansMedium,
-    fontSize: 12,
-    letterSpacing: 2,
+    fontSize: 11,
+    letterSpacing: 3,
     textTransform: "uppercase",
-    color: palette.textSecondary,
+    color: palette.sage,
+    opacity: 0.85,
     marginBottom: space.xs,
   },
-  title: {
+  brandTitle: {
     fontFamily: fontFamily.displayBold,
-    fontSize: 44,
+    fontSize: 48,
     color: palette.text,
-    letterSpacing: -0.5,
-    marginBottom: space.sm,
+    letterSpacing: 4,
+    lineHeight: 52,
   },
-  sub: {
+  brandDivider: {
+    width: 40,
+    height: 2,
+    backgroundColor: palette.sage,
+    opacity: 0.5,
+    borderRadius: 1,
+    marginVertical: space.sm,
+  },
+  brandSub: {
     fontFamily: fontFamily.sans,
     fontSize: 16,
     lineHeight: 24,
     color: palette.textSecondary,
-    marginBottom: space.md,
+  },
+
+  // Form
+  form: {
+    gap: space.sm,
+  },
+  field: {
+    gap: 6,
+  },
+  label: {
+    fontFamily: fontFamily.sansMedium,
+    color: palette.textMuted,
+    fontSize: 11,
+    textTransform: "uppercase",
+    letterSpacing: 1,
+    paddingLeft: 2,
   },
   input: {
     fontFamily: fontFamily.sans,
     backgroundColor: palette.surface,
-    borderRadius: radius.md,
-    padding: space.md,
+    borderRadius: radius.lg,
+    paddingHorizontal: space.md,
+    paddingVertical: 14,
     fontSize: 16,
     color: palette.text,
     borderWidth: 1,
@@ -134,36 +189,43 @@ const styles = StyleSheet.create({
   primary: {
     backgroundColor: palette.sage,
     paddingVertical: 16,
-    borderRadius: radius.md,
+    borderRadius: radius.full,
     alignItems: "center",
     marginTop: space.sm,
   },
   primaryText: {
     fontFamily: fontFamily.sansSemiBold,
     color: palette.bg,
-    fontSize: 17,
+    fontSize: 16,
+    letterSpacing: 0.3,
   },
   disabled: {
-    opacity: 0.55,
+    opacity: 0.5,
   },
-  link: {
+  forgotRow: {
+    alignItems: "center",
+    paddingVertical: space.xs,
+  },
+  forgotText: {
     fontFamily: fontFamily.sansMedium,
     color: palette.link,
-    fontSize: 15,
-    marginTop: space.xs,
+    fontSize: 14,
   },
-  muted: {
+
+  // Footer
+  footer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    paddingVertical: space.sm,
+  },
+  footerMuted: {
     fontFamily: fontFamily.sans,
     color: palette.textMuted,
     fontSize: 15,
   },
-  linkInline: {
+  footerLink: {
     fontFamily: fontFamily.sansSemiBold,
     color: palette.link,
     fontSize: 15,
-  },
-  row: {
-    flexDirection: "row",
-    marginTop: space.md,
   },
 });

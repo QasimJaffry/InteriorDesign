@@ -30,6 +30,11 @@ export function FurnitureCard({
   return (
     <View style={[styles.card, style]}>
       <Image source={{ uri: item.imageUrl }} style={styles.image} />
+
+      {/* Dark gradient overlay at bottom */}
+      <View style={styles.overlay} />
+
+      {/* Meta overlaid on image */}
       <View style={styles.meta}>
         <Text style={styles.type} numberOfLines={1}>
           {item.type}
@@ -38,6 +43,8 @@ export function FurnitureCard({
           {item.name}
         </Text>
       </View>
+
+      {/* Heart button */}
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={isSaved ? "Remove from saved" : "Save item"}
@@ -47,8 +54,8 @@ export function FurnitureCard({
       >
         <FontAwesome
           name={isSaved ? "heart" : "heart-o"}
-          size={20}
-          color={isSaved ? palette.sage : palette.textMuted}
+          size={18}
+          color={isSaved ? palette.sage : palette.text}
         />
       </Pressable>
     </View>
@@ -60,33 +67,44 @@ const styles = StyleSheet.create({
     flex: 1,
     margin: 6,
     borderRadius: radius.lg,
-    backgroundColor: palette.surface,
     overflow: "hidden",
-    borderWidth: 1,
-    borderColor: palette.borderSubtle,
+    backgroundColor: palette.surface2,
   },
   image: {
     width: "100%",
     aspectRatio: 1,
     backgroundColor: palette.surface2,
   },
+  overlay: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: "38%",
+    backgroundColor: "rgba(14, 16, 32, 0.58)",
+  },
   meta: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
     padding: 10,
-    paddingRight: 40,
+    paddingRight: 38,
+    paddingBottom: 12,
   },
   type: {
     fontFamily: fontFamily.sansMedium,
-    color: palette.textSecondary,
-    fontSize: 11,
+    color: "rgba(255, 255, 255, 0.65)",
+    fontSize: 10,
     textTransform: "uppercase",
     letterSpacing: 0.8,
+    marginBottom: 3,
   },
   name: {
     fontFamily: fontFamily.sansSemiBold,
-    color: palette.text,
-    fontSize: 15,
-    marginTop: 4,
-    lineHeight: 20,
+    color: palette.white,
+    fontSize: 13,
+    lineHeight: 18,
   },
   heartBtn: {
     position: "absolute",
@@ -94,6 +112,8 @@ const styles = StyleSheet.create({
     right: 8,
     padding: 8,
     borderRadius: 20,
-    backgroundColor: palette.overlay,
+    backgroundColor: "rgba(14, 16, 32, 0.55)",
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.15)",
   },
 });

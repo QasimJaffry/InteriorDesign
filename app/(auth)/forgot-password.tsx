@@ -41,28 +41,46 @@ export default function ForgotPasswordScreen() {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <View style={styles.inner}>
-        <Text style={styles.hint}>
-          Enter your account email and we will send a password reset link.
-        </Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          placeholderTextColor={palette.textMuted}
-          autoCapitalize="none"
-          keyboardType="email-address"
-          value={email}
-          onChangeText={setEmail}
-        />
-        <Pressable
-          style={[styles.primary, busy && styles.disabled]}
-          onPress={onSubmit}
-          disabled={busy}
-        >
-          <Text style={styles.primaryText}>Send reset email</Text>
-        </Pressable>
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.headerKicker}>Account recovery</Text>
+          <Text style={styles.headerTitle}>Reset password</Text>
+          <View style={styles.headerDivider} />
+          <Text style={styles.headerSub}>
+            Enter your account email and we'll send a reset link to your inbox.
+          </Text>
+        </View>
+
+        {/* Form */}
+        <View style={styles.form}>
+          <View style={styles.field}>
+            <Text style={styles.label}>Email</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="you@example.com"
+              placeholderTextColor={palette.textMuted}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              value={email}
+              onChangeText={setEmail}
+            />
+          </View>
+
+          <Pressable
+            style={[styles.primary, busy && styles.disabled]}
+            onPress={onSubmit}
+            disabled={busy}
+          >
+            <Text style={styles.primaryText}>
+              {busy ? "Sending…" : "Send reset email"}
+            </Text>
+          </Pressable>
+        </View>
+
+        {/* Back link */}
         <Link href="/login" asChild>
-          <Pressable style={styles.row}>
-            <Text style={styles.link}>Back to sign in</Text>
+          <Pressable style={styles.backRow}>
+            <Text style={styles.backText}>← Back to sign in</Text>
           </Pressable>
         </Link>
       </View>
@@ -77,21 +95,68 @@ const styles = StyleSheet.create({
   },
   inner: {
     flex: 1,
-    padding: space.lg,
+    paddingHorizontal: space.lg,
+    paddingVertical: space.xl,
+    justifyContent: "center",
+    gap: space.xl,
+  },
+
+  // Header
+  header: {
+    gap: 4,
+  },
+  headerKicker: {
+    fontFamily: fontFamily.sansMedium,
+    fontSize: 11,
+    letterSpacing: 3,
+    textTransform: "uppercase",
+    color: palette.sage,
+    opacity: 0.85,
+    marginBottom: space.xs,
+  },
+  headerTitle: {
+    fontFamily: fontFamily.displayBold,
+    fontSize: 38,
+    color: palette.text,
+    letterSpacing: 0.5,
+    lineHeight: 44,
+  },
+  headerDivider: {
+    width: 32,
+    height: 2,
+    backgroundColor: palette.sage,
+    opacity: 0.5,
+    borderRadius: 1,
+    marginVertical: space.sm,
+  },
+  headerSub: {
+    fontFamily: fontFamily.sans,
+    fontSize: 15,
+    lineHeight: 23,
+    color: palette.textSecondary,
+  },
+
+  // Form
+  form: {
     gap: space.sm,
   },
-  hint: {
-    fontFamily: fontFamily.sans,
-    color: palette.textSecondary,
-    fontSize: 16,
-    lineHeight: 24,
-    marginBottom: space.sm,
+  field: {
+    gap: 6,
+  },
+  label: {
+    fontFamily: fontFamily.sansMedium,
+    color: palette.textMuted,
+    fontSize: 11,
+    textTransform: "uppercase",
+    letterSpacing: 1,
+    paddingLeft: 2,
   },
   input: {
     fontFamily: fontFamily.sans,
     backgroundColor: palette.surface,
-    borderRadius: radius.md,
-    padding: space.md,
+    borderRadius: radius.lg,
+    paddingHorizontal: space.md,
+    paddingVertical: 14,
     fontSize: 16,
     color: palette.text,
     borderWidth: 1,
@@ -100,25 +165,28 @@ const styles = StyleSheet.create({
   primary: {
     backgroundColor: palette.sage,
     paddingVertical: 16,
-    borderRadius: radius.md,
+    borderRadius: radius.full,
     alignItems: "center",
-    marginTop: space.sm,
+    marginTop: space.xs,
   },
   primaryText: {
     fontFamily: fontFamily.sansSemiBold,
     color: palette.bg,
-    fontSize: 17,
+    fontSize: 16,
+    letterSpacing: 0.3,
   },
   disabled: {
-    opacity: 0.55,
+    opacity: 0.5,
   },
-  link: {
+
+  // Back link
+  backRow: {
+    alignItems: "center",
+    paddingVertical: space.sm,
+  },
+  backText: {
     fontFamily: fontFamily.sansMedium,
     color: palette.link,
     fontSize: 15,
-    marginTop: space.md,
-  },
-  row: {
-    marginTop: space.xs,
   },
 });

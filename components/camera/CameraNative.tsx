@@ -11,11 +11,32 @@ import {
   View,
 } from "react-native";
 import Toast from "react-native-toast-message";
+import Feather from "@expo/vector-icons/Feather";
 
-import { bestDetectionFromLabels } from "@/lib/mlLabelMap";
+import { allDetectionsFromLabels, bestDetectionFromLabels } from "@/lib/mlLabelMap";
 import { useScanResult } from "@/hooks/useScanResult";
 import { useAppStore } from "@/store/appStore";
 import { fontFamily, palette, radius, space } from "@/constants/theme";
+
+/** Four corner brackets that form a viewfinder reticle. */
+function Viewfinder({ active }: { active: boolean }) {
+  const color = active ? palette.sage : palette.link;
+  const corner: object = {
+    position: "absolute",
+    width: 22,
+    height: 22,
+    borderColor: color,
+    opacity: active ? 1 : 0.6,
+  };
+  return (
+    <View style={styles.viewfinder} pointerEvents="none">
+      <View style={[corner, styles.cTL]} />
+      <View style={[corner, styles.cTR]} />
+      <View style={[corner, styles.cBL]} />
+      <View style={[corner, styles.cBR]} />
+    </View>
+  );
+}
 
 export function CameraNative() {
   const [permission, requestPermission] = useCameraPermissions();
@@ -31,25 +52,19 @@ export function CameraNative() {
   } | null>(null);
 
   const onCapture = async () => {
-    if (!detector?.isLoaded() || !cameraRef.current || scanning || saving) {
-      return;
-    }
+    if (!detector?.isLoaded() || !cameraRef.current || scanning || saving) return;
     setScanning(true);
     let photoUri: string | null = null;
     try {
-      const photo = await cameraRef.current.takePictureAsync({
-        quality: 0.4,
-      });
+      const photo = await cameraRef.current.takePictureAsync({ quality: 0.4 });
       photoUri = photo?.uri ?? null;
       if (!photoUri) {
         Toast.show({ type: "error", text1: "Failed to take photo" });
         return;
       }
-
       const results = await detector.detectObjects(photoUri);
       const labels = results.flatMap((r) => r.labels ?? []);
       const best = bestDetectionFromLabels(labels);
-
       if (!best) {
         setLastResult(null);
         Toast.show({
@@ -59,7 +74,7 @@ export function CameraNative() {
         });
         return;
       }
-
+      const allDetections = allDetectionsFromLabels(labels);
       setLastResult(best);
       await saveScanResult(best.type, best.confidence);
       setScanFilter(best.type);
@@ -68,17 +83,18 @@ export function CameraNative() {
         params: {
           detectedType: best.type,
           confidence: String(best.confidence),
+          allTypes: allDetections.map((d) => d.type).join(","),
         },
       });
     } catch {
       Toast.show({ type: "error", text1: "Could not save scan" });
     } finally {
-      if (photoUri) {
-        void FileSystem.deleteAsync(photoUri, { idempotent: true });
-      }
+      if (photoUri) void FileSystem.deleteAsync(photoUri, { idempotent: true });
       setScanning(false);
     }
   };
+
+  // ── Loading / permission states ────────────────────────────────────────────
 
   if (!permission) {
     return (
@@ -91,13 +107,16 @@ export function CameraNative() {
   if (!permission.granted) {
     return (
       <View style={styles.center}>
-        <Text style={styles.permissionTitle}>Camera access</Text>
-        <Text style={styles.msg}>
-          We use the camera to detect furniture in frame and suggest matching
+        <View style={styles.permIcon}>
+          <Feather name="camera" size={32} color={palette.sage} />
+        </View>
+        <Text style={styles.permTitle}>Camera access</Text>
+        <Text style={styles.permMsg}>
+          INTERIO uses your camera to identify furniture and suggest matching
           pieces. Nothing is uploaded without your action.
         </Text>
-        <Pressable style={styles.primary} onPress={requestPermission}>
-          <Text style={styles.primaryText}>Continue</Text>
+        <Pressable style={styles.permBtn} onPress={requestPermission}>
+          <Text style={styles.permBtnText}>Grant access</Text>
         </Pressable>
       </View>
     );
@@ -107,159 +126,270 @@ export function CameraNative() {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" color={palette.sage} />
-        <Text style={styles.hint}>Loading on-device model…</Text>
+        <Text style={styles.loadingText}>Loading detection model…</Text>
       </View>
     );
   }
 
   const busy = scanning || saving;
 
+  // ── Status info ───────────────────────────────────────────────────────────
+  const statusLabel = scanning
+    ? "Detecting…"
+    : saving
+    ? "Saving result…"
+    : lastResult
+    ? lastResult.type
+    : "Ready";
+
+  const statusSub = scanning || saving
+    ? null
+    : lastResult
+    ? `${(lastResult.confidence * 100).toFixed(0)}% confidence`
+    : "Frame a chair, table, or sofa";
+
   return (
     <View style={styles.container}>
+      {/* Live camera feed */}
       <CameraView ref={cameraRef} style={styles.camera} facing="back" />
+
+      {/* HUD overlay */}
       <View style={styles.hud} pointerEvents="box-none">
-        <View style={styles.badge}>
-          {scanning ? (
-            <>
-              <ActivityIndicator size="small" color={palette.link} />
-              <Text style={styles.muted}>Detecting…</Text>
-            </>
-          ) : lastResult ? (
-            <>
-              <Text style={styles.badgeTitle}>Last scan</Text>
-              <Text style={styles.badgeType}>{lastResult.type}</Text>
-              <Text style={styles.badgeConf}>
-                {(lastResult.confidence * 100).toFixed(0)}% confidence
-              </Text>
-            </>
-          ) : (
-            <>
-              <Text style={styles.badgeTitle}>Ready</Text>
-              <Text style={styles.muted}>
-                Frame a chair, table, or sofa — then tap scan
-              </Text>
-            </>
-          )}
+
+        {/* Top status pill */}
+        <View style={styles.topArea} pointerEvents="none">
+          <View style={[styles.statusPill, lastResult && !busy && styles.statusPillResult]}>
+            {busy ? (
+              <ActivityIndicator size="small" color={palette.sage} style={{ marginRight: 8 }} />
+            ) : (
+              <View style={[styles.statusDot, lastResult ? styles.statusDotResult : styles.statusDotReady]} />
+            )}
+            <View>
+              <Text style={styles.statusLabel}>{statusLabel}</Text>
+              {statusSub ? (
+                <Text style={styles.statusSub}>{statusSub}</Text>
+              ) : null}
+            </View>
+          </View>
         </View>
-        <Pressable
-          style={[styles.capture, busy && styles.disabled]}
-          onPress={onCapture}
-          disabled={busy}
-        >
-          <Text style={styles.captureText}>
-            {saving ? "Saving…" : scanning ? "Scanning…" : "Scan furniture"}
+
+        {/* Viewfinder */}
+        <Viewfinder active={busy} />
+
+        {/* Bottom panel */}
+        <View style={styles.bottomPanel}>
+          <Text style={styles.hint}>
+            {busy
+              ? "Please wait…"
+              : "Frame furniture and tap to scan"}
           </Text>
-        </Pressable>
+
+          {/* Shutter button */}
+          <Pressable
+            style={[styles.shutter, busy && styles.shutterBusy]}
+            onPress={onCapture}
+            disabled={busy}
+          >
+            <View style={[styles.shutterInner, busy && styles.shutterInnerBusy]} />
+          </Pressable>
+
+          {/* Placeholder for symmetry */}
+          <View style={styles.shutterSpacer} />
+        </View>
       </View>
     </View>
   );
 }
 
+// ─── Styles ───────────────────────────────────────────────────────────────────
+
+const CORNER_THICK = 3;
+
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: palette.black,
-  },
-  camera: {
-    flex: 1,
-  },
+  container: { flex: 1, backgroundColor: palette.black },
+  camera: { flex: 1 },
+
   hud: {
     ...StyleSheet.absoluteFillObject,
     justifyContent: "space-between",
-    padding: space.md,
   },
-  badge: {
-    alignSelf: "center",
-    marginTop: space.xl,
-    backgroundColor: palette.overlay,
-    paddingHorizontal: space.lg,
-    paddingVertical: space.md,
-    borderRadius: radius.lg,
-    minWidth: 240,
+
+  // ── Top status area ───────────────────────────────────────────────────────
+  topArea: {
     alignItems: "center",
-    gap: 4,
+    paddingTop: space.xl + space.sm,
+  },
+  statusPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: palette.overlay,
     borderWidth: 1,
-    borderColor: palette.border,
+    borderColor: "rgba(255, 255, 255, 0.15)",
+    borderRadius: radius.full,
+    paddingHorizontal: space.md,
+    paddingVertical: 10,
+    gap: 10,
   },
-  badgeTitle: {
+  statusPillResult: {
+    borderColor: palette.sageBorder,
+    backgroundColor: "rgba(92, 81, 224, 0.18)",
+  },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  statusDotReady: {
+    backgroundColor: palette.ice,
+  },
+  statusDotResult: {
+    backgroundColor: palette.sage,
+  },
+  statusLabel: {
     fontFamily: fontFamily.sansSemiBold,
-    color: palette.textMuted,
-    fontSize: 11,
-    letterSpacing: 1.5,
-    textTransform: "uppercase",
-    marginBottom: 4,
-  },
-  badgeType: {
-    fontFamily: fontFamily.displaySemibold,
     color: palette.white,
-    fontSize: 24,
+    fontSize: 15,
+    textTransform: "capitalize",
   },
-  badgeConf: {
-    fontFamily: fontFamily.sansMedium,
-    color: palette.link,
-    fontSize: 14,
-    marginTop: 4,
-  },
-  muted: {
+  statusSub: {
     fontFamily: fontFamily.sans,
-    color: palette.textSecondary,
+    color: "rgba(255, 255, 255, 0.6)",
+    fontSize: 12,
+    marginTop: 1,
+  },
+
+  // ── Viewfinder reticle ────────────────────────────────────────────────────
+  viewfinder: {
+    position: "absolute",
+    top: "22%",
+    left: "12%",
+    right: "12%",
+    bottom: "28%",
+  },
+  cTL: {
+    top: 0,
+    left: 0,
+    borderTopWidth: CORNER_THICK,
+    borderLeftWidth: CORNER_THICK,
+    borderTopLeftRadius: 4,
+  },
+  cTR: {
+    top: 0,
+    right: 0,
+    borderTopWidth: CORNER_THICK,
+    borderRightWidth: CORNER_THICK,
+    borderTopRightRadius: 4,
+  },
+  cBL: {
+    bottom: 0,
+    left: 0,
+    borderBottomWidth: CORNER_THICK,
+    borderLeftWidth: CORNER_THICK,
+    borderBottomLeftRadius: 4,
+  },
+  cBR: {
+    bottom: 0,
+    right: 0,
+    borderBottomWidth: CORNER_THICK,
+    borderRightWidth: CORNER_THICK,
+    borderBottomRightRadius: 4,
+  },
+
+  // ── Bottom panel ──────────────────────────────────────────────────────────
+  bottomPanel: {
+    backgroundColor: palette.overlay,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: "rgba(255, 255, 255, 0.12)",
+    paddingTop: space.md,
+    paddingBottom: space.xl + space.sm,
+    paddingHorizontal: space.lg,
+    alignItems: "center",
+    gap: space.md,
+  },
+  hint: {
+    fontFamily: fontFamily.sans,
+    color: "rgba(255, 255, 255, 0.6)",
     fontSize: 14,
     textAlign: "center",
-    lineHeight: 20,
   },
-  capture: {
-    backgroundColor: palette.sage,
-    paddingVertical: 18,
-    borderRadius: radius.lg,
+
+  // Shutter button: outer ring + inner filled circle
+  shutter: {
+    width: 78,
+    height: 78,
+    borderRadius: 39,
+    borderWidth: 3,
+    borderColor: palette.white,
     alignItems: "center",
+    justifyContent: "center",
   },
-  captureText: {
-    fontFamily: fontFamily.sansSemiBold,
-    color: palette.bg,
-    fontSize: 16,
+  shutterBusy: {
+    borderColor: "rgba(255, 255, 255, 0.4)",
+    opacity: 0.6,
   },
-  disabled: {
-    opacity: 0.55,
+  shutterInner: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: palette.sage,
   },
+  shutterInnerBusy: {
+    backgroundColor: palette.sageDeep,
+  },
+  shutterSpacer: {
+    height: 4,
+  },
+
+  // ── Permission / loading states ───────────────────────────────────────────
   center: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     padding: space.lg,
     backgroundColor: palette.bg,
+    gap: space.md,
   },
-  permissionTitle: {
+  permIcon: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: palette.sageMuted,
+    borderWidth: 1,
+    borderColor: palette.sageBorder,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: space.sm,
+  },
+  permTitle: {
     fontFamily: fontFamily.displaySemibold,
-    fontSize: 26,
+    fontSize: 28,
     color: palette.text,
-    marginBottom: space.md,
     textAlign: "center",
   },
-  msg: {
+  permMsg: {
     fontFamily: fontFamily.sans,
     color: palette.textSecondary,
-    fontSize: 16,
+    fontSize: 15,
     textAlign: "center",
-    lineHeight: 24,
-    marginBottom: space.lg,
-    maxWidth: 320,
+    lineHeight: 23,
+    maxWidth: 300,
   },
-  hint: {
+  permBtn: {
+    backgroundColor: palette.sage,
+    paddingHorizontal: space.xl,
+    paddingVertical: 15,
+    borderRadius: radius.full,
+    marginTop: space.sm,
+  },
+  permBtnText: {
+    fontFamily: fontFamily.sansSemiBold,
+    color: palette.white,
+    fontSize: 16,
+    letterSpacing: 0.2,
+  },
+  loadingText: {
     fontFamily: fontFamily.sans,
     color: palette.textMuted,
-    marginTop: space.md,
     fontSize: 14,
-  },
-  primary: {
-    marginTop: space.sm,
-    backgroundColor: palette.sage,
-    paddingHorizontal: space.lg,
-    paddingVertical: 16,
-    borderRadius: radius.md,
-  },
-  primaryText: {
-    fontFamily: fontFamily.sansSemiBold,
-    color: palette.bg,
-    fontSize: 16,
   },
 });
