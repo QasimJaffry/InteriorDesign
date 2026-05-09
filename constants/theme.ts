@@ -1,5 +1,5 @@
 /**
- * INTERIO — clean white + rich violet, editorial light UI.
+ * INTERIO — clean white + olive/charcoal brand tones from the app icon.
  * Single source of truth for colors, type roles, radius, and spacing.
  */
 
@@ -18,18 +18,18 @@ export const palette = {
   textSecondary: "#4a5270",
   textMuted: "#8890b0",
 
-  // ── Primary accent — rich indigo-violet ─────────────────────────────────────
-  sage: "#5c51e0",
-  sageDeep: "#4339bc",
-  sageMuted: "rgba(92, 81, 224, 0.10)",
-  sageBorder: "rgba(92, 81, 224, 0.24)",
+  // ── Primary accent — olive green from app icon ──────────────────────────────
+  sage: "#8b9878",
+  sageDeep: "#5a6451",
+  sageMuted: "rgba(139, 152, 120, 0.12)",
+  sageBorder: "rgba(139, 152, 120, 0.30)",
 
   // ── Links ───────────────────────────────────────────────────────────────────
-  link: "#5c51e0",
-  linkHover: "#4339bc",
+  link: "#8b9878",
+  linkHover: "#5a6451",
 
-  // ── Secondary accent — teal ─────────────────────────────────────────────────
-  ice: "#2ab5aa",
+  // ── Secondary accent — muted moss ───────────────────────────────────────────
+  ice: "#a2ab8e",
 
   // ── Danger ──────────────────────────────────────────────────────────────────
   danger: "#d43838",

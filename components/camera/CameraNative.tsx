@@ -232,7 +232,7 @@ const styles = StyleSheet.create({
   },
   statusPillResult: {
     borderColor: palette.sageBorder,
-    backgroundColor: "rgba(92, 81, 224, 0.18)",
+    backgroundColor: palette.sageMuted,
   },
   statusDot: {
     width: 8,
