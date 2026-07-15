@@ -1,10 +1,14 @@
+import type { ImageSourcePropType } from "react-native";
 import type { Timestamp } from "firebase/firestore";
 
 export type Furniture = {
   id: string;
   name: string;
   type: string;
-  imageUrl: string;
+  /** Remote thumbnail (Firestore catalogue). */
+  imageUrl?: string;
+  /** Bundled local thumbnail (offline catalogue). */
+  image?: ImageSourcePropType;
   modelUrl: string;
 };
 

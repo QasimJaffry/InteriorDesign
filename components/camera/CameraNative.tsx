@@ -10,6 +10,8 @@ import {
   Text,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { StatusBar } from "expo-status-bar";
 import Toast from "react-native-toast-message";
 import Feather from "@expo/vector-icons/Feather";
 
@@ -39,6 +41,7 @@ function Viewfinder({ active }: { active: boolean }) {
 }
 
 export function CameraNative() {
+  const insets = useSafeAreaInsets();
   const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = useRef<CameraView>(null);
   const detector = useObjectDetection("default");
@@ -52,7 +55,9 @@ export function CameraNative() {
   } | null>(null);
 
   const onCapture = async () => {
-    if (!detector?.isLoaded() || !cameraRef.current || scanning || saving) return;
+    if (scanning || saving) return;
+    if (!detector?.isLoaded() || !cameraRef.current) return;
+
     setScanning(true);
     let photoUri: string | null = null;
     try {
@@ -137,32 +142,49 @@ export function CameraNative() {
   const statusLabel = scanning
     ? "Detecting…"
     : saving
-    ? "Saving result…"
-    : lastResult
-    ? lastResult.type
-    : "Ready";
+      ? "Saving result…"
+      : lastResult
+        ? lastResult.type
+        : "Ready";
 
-  const statusSub = scanning || saving
-    ? null
-    : lastResult
-    ? `${(lastResult.confidence * 100).toFixed(0)}% confidence`
-    : "Frame a chair, table, or sofa";
+  const statusSub =
+    scanning || saving
+      ? null
+      : lastResult
+        ? `${(lastResult.confidence * 100).toFixed(0)}% confidence`
+        : "Frame a chair, table, or sofa";
 
   return (
     <View style={styles.container}>
-      {/* Live camera feed */}
+      <StatusBar style="light" translucent backgroundColor="transparent" />
       <CameraView ref={cameraRef} style={styles.camera} facing="back" />
 
       {/* HUD overlay */}
       <View style={styles.hud} pointerEvents="box-none">
-
         {/* Top status pill */}
-        <View style={styles.topArea} pointerEvents="none">
-          <View style={[styles.statusPill, lastResult && !busy && styles.statusPillResult]}>
+        <View
+          style={[styles.topArea, { paddingTop: Math.max(insets.top, 28) + 12 }]}
+          pointerEvents="none"
+        >
+          <View
+            style={[
+              styles.statusPill,
+              lastResult && !busy && styles.statusPillResult,
+            ]}
+          >
             {busy ? (
-              <ActivityIndicator size="small" color={palette.sage} style={{ marginRight: 8 }} />
+              <ActivityIndicator
+                size="small"
+                color={palette.sage}
+                style={{ marginRight: 8 }}
+              />
             ) : (
-              <View style={[styles.statusDot, lastResult ? styles.statusDotResult : styles.statusDotReady]} />
+              <View
+                style={[
+                  styles.statusDot,
+                  lastResult ? styles.statusDotResult : styles.statusDotReady,
+                ]}
+              />
             )}
             <View>
               <Text style={styles.statusLabel}>{statusLabel}</Text>
@@ -179,21 +201,19 @@ export function CameraNative() {
         {/* Bottom panel */}
         <View style={styles.bottomPanel}>
           <Text style={styles.hint}>
-            {busy
-              ? "Please wait…"
-              : "Frame furniture and tap to scan"}
+            {busy ? "Please wait…" : "Frame furniture and tap to scan"}
           </Text>
 
-          {/* Shutter button */}
           <Pressable
             style={[styles.shutter, busy && styles.shutterBusy]}
             onPress={onCapture}
             disabled={busy}
           >
-            <View style={[styles.shutterInner, busy && styles.shutterInnerBusy]} />
+            <View
+              style={[styles.shutterInner, busy && styles.shutterInnerBusy]}
+            />
           </Pressable>
 
-          {/* Placeholder for symmetry */}
           <View style={styles.shutterSpacer} />
         </View>
       </View>
@@ -214,10 +234,8 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
 
-  // ── Top status area ───────────────────────────────────────────────────────
   topArea: {
     alignItems: "center",
-    paddingTop: space.xl + space.sm,
   },
   statusPill: {
     flexDirection: "row",
@@ -258,7 +276,6 @@ const styles = StyleSheet.create({
     marginTop: 1,
   },
 
-  // ── Viewfinder reticle ────────────────────────────────────────────────────
   viewfinder: {
     position: "absolute",
     top: "22%",
@@ -295,7 +312,6 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 4,
   },
 
-  // ── Bottom panel ──────────────────────────────────────────────────────────
   bottomPanel: {
     backgroundColor: palette.overlay,
     borderTopWidth: StyleSheet.hairlineWidth,
@@ -313,7 +329,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 
-  // Shutter button: outer ring + inner filled circle
   shutter: {
     width: 78,
     height: 78,
@@ -340,7 +355,6 @@ const styles = StyleSheet.create({
     height: 4,
   },
 
-  // ── Permission / loading states ───────────────────────────────────────────
   center: {
     flex: 1,
     justifyContent: "center",

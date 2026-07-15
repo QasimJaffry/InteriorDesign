@@ -16,7 +16,7 @@ export function SearchBar({ value, onChangeText, placeholder }: Props) {
       <View style={styles.inputRow}>
         <FontAwesome
           name="search"
-          size={15}
+          size={14}
           color={palette.textMuted}
           style={styles.icon}
         />
@@ -38,27 +38,20 @@ export function SearchBar({ value, onChangeText, placeholder }: Props) {
 const styles = StyleSheet.create({
   wrap: {
     paddingHorizontal: space.md,
-    paddingTop: space.md,
-    paddingBottom: space.sm,
+    paddingTop: space.sm,
+    paddingBottom: space.xs,
   },
   inputRow: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: palette.surface,
-    borderRadius: radius.xl,
-    borderWidth: 1,
-    borderColor: palette.border,
+    borderRadius: radius.full,
     paddingHorizontal: space.md,
-    paddingVertical: 13,
+    paddingVertical: 12,
     gap: space.sm,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 2,
   },
   icon: {
-    opacity: 0.7,
+    opacity: 0.75,
   },
   input: {
     flex: 1,

@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import Toast from "react-native-toast-message";
 
+import { ScreenHeader } from "@/components/ScreenHeader";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { fontFamily, palette, radius, space } from "@/constants/theme";
@@ -86,11 +87,13 @@ export default function ProfileScreen() {
   }
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.content}
-      showsVerticalScrollIndicator={false}
-    >
+    <View style={styles.container}>
+      <ScreenHeader title="Profile" subtitle="Account" borderless />
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
       {/* Avatar + user info */}
       <View style={styles.heroCard}>
         <View style={styles.avatar}>
@@ -146,7 +149,8 @@ export default function ProfileScreen() {
         <Feather name="log-out" size={16} color={palette.danger} style={{ marginRight: 8 }} />
         <Text style={styles.signOutText}>Sign out</Text>
       </Pressable>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
@@ -155,8 +159,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: palette.bg,
   },
+  scroll: {
+    flex: 1,
+  },
   content: {
     padding: space.lg,
+    paddingTop: space.sm,
     paddingBottom: space.xl * 2,
   },
   center: {
@@ -172,25 +180,20 @@ const styles = StyleSheet.create({
   heroCard: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: palette.surface,
+    backgroundColor: palette.elevated,
     borderRadius: radius.xl,
     padding: space.lg,
-    marginBottom: space.md,
-    borderWidth: 1,
-    borderColor: palette.border,
+    marginBottom: space.lg,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: palette.borderSubtle,
     gap: space.md,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
   },
   avatar: {
     width: 64,
     height: 64,
     borderRadius: 32,
     backgroundColor: palette.sageMuted,
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: palette.sageBorder,
     alignItems: "center",
     justifyContent: "center",
@@ -199,7 +202,7 @@ const styles = StyleSheet.create({
   avatarText: {
     fontFamily: fontFamily.displayBold,
     fontSize: 24,
-    color: palette.sage,
+    color: palette.sageDeep,
     letterSpacing: 1,
   },
   heroInfo: {
@@ -207,10 +210,10 @@ const styles = StyleSheet.create({
   },
   heroName: {
     fontFamily: fontFamily.displaySemibold,
-    fontSize: 24,
+    fontSize: 26,
     color: palette.text,
     marginBottom: 4,
-    letterSpacing: -0.2,
+    letterSpacing: -0.3,
   },
   heroEmail: {
     fontFamily: fontFamily.sans,
@@ -220,18 +223,13 @@ const styles = StyleSheet.create({
 
   // Section card
   section: {
-    backgroundColor: palette.surface,
+    backgroundColor: palette.elevated,
     borderRadius: radius.xl,
     padding: space.md,
     marginBottom: space.md,
-    borderWidth: 1,
-    borderColor: palette.border,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: palette.borderSubtle,
     gap: space.sm,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    elevation: 1,
   },
   sectionHeader: {
     flexDirection: "row",
@@ -240,30 +238,30 @@ const styles = StyleSheet.create({
     marginBottom: space.xs,
     paddingBottom: space.sm,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: palette.border,
+    borderBottomColor: palette.borderSubtle,
   },
   sectionTitle: {
-    fontFamily: fontFamily.sansSemiBold,
-    color: palette.textSecondary,
-    fontSize: 13,
-    letterSpacing: 0.3,
+    fontFamily: fontFamily.sansMedium,
+    color: palette.textMuted,
+    fontSize: 12,
+    letterSpacing: 1.2,
     textTransform: "uppercase",
   },
 
   // Inputs
   input: {
     fontFamily: fontFamily.sans,
-    backgroundColor: palette.surface2,
+    backgroundColor: palette.surface,
     borderRadius: radius.md,
     paddingHorizontal: space.md,
     paddingVertical: 13,
     fontSize: 15,
     color: palette.text,
-    borderWidth: 1,
+    borderWidth: StyleSheet.hairlineWidth,
     borderColor: palette.border,
   },
   primary: {
-    backgroundColor: palette.sage,
+    backgroundColor: palette.text,
     paddingVertical: 15,
     borderRadius: radius.full,
     alignItems: "center",

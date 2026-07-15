@@ -11,14 +11,15 @@ import {
   PlusJakartaSans_700Bold,
 } from "@expo-google-fonts/plus-jakarta-sans";
 import {
-  DarkTheme,
+  DefaultTheme,
   ThemeProvider,
 } from "@react-navigation/native";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
+import { StatusBar } from "expo-status-bar";
+import * as SystemUI from "expo-system-ui";
 import { useEffect } from "react";
-import { StatusBar } from "react-native";
 import Toast from "react-native-toast-message";
 import "react-native-reanimated";
 
@@ -37,14 +38,15 @@ export const unstable_settings = {
 SplashScreen.preventAutoHideAsync();
 
 const NavTheme = {
-  ...DarkTheme,
+  ...DefaultTheme,
   colors: {
-    ...DarkTheme.colors,
+    ...DefaultTheme.colors,
     background: palette.bg,
-    card: palette.elevated,
+    card: palette.bg,
     primary: palette.sage,
     text: palette.text,
-    border: palette.border,
+    border: palette.borderSubtle,
+    notification: palette.sage,
   },
 };
 
@@ -68,6 +70,7 @@ export default function RootLayout() {
   useEffect(() => {
     if (loaded) {
       SplashScreen.hideAsync();
+      void SystemUI.setBackgroundColorAsync(palette.bg);
     }
   }, [loaded]);
 
@@ -80,7 +83,7 @@ export default function RootLayout() {
       <ObjectDetectionProviderWrapper>
         <FurnitureProvider>
           <ThemeProvider value={NavTheme}>
-            <StatusBar barStyle="light-content" />
+            <StatusBar style="dark" backgroundColor={palette.bg} />
             <Stack screenOptions={{ headerShown: false }}>
               <Stack.Screen name="index" />
               <Stack.Screen name="(auth)" />

@@ -30,7 +30,27 @@ export function useFavouritesSync() {
     if (!isFirebaseConfigured()) {
       let cancelled = false;
       void (async () => {
-        const ids = await loadLocalFavouriteIds();
+        let ids = await loadLocalFavouriteIds();
+        const legacy = [
+          "sofa-3seat",
+          "chair-accent",
+          "sofa-2seat",
+          "lamp-floor",
+          "bed-upholstered",
+          "couch-deep",
+        ];
+        const hasLegacy = ids.some((id) => legacy.includes(id));
+        if (ids.length === 0 || hasLegacy) {
+          ids = [
+            "sofa-velvet",
+            "chair-sheen",
+            "table-round",
+            "sofa-leather",
+            "lamp-barn",
+            "shelf",
+          ];
+          await saveLocalFavouriteIds(ids);
+        }
         if (!cancelled) {
           setSavedIds(ids);
         }

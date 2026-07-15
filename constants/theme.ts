@@ -1,46 +1,46 @@
 /**
- * INTERIO — clean white + olive/charcoal brand tones from the app icon.
- * Single source of truth for colors, type roles, radius, and spacing.
+ * INTERIO — warm plaster / linen surfaces + olive accent from the app icon.
+ * Editorial interior studio: imagery leads, chrome stays quiet.
  */
 
 export const palette = {
-  // ── Backgrounds — pure white ────────────────────────────────────────────────
-  bg: "#ffffff",
-  bgMuted: "#f7f8fc",
-  elevated: "#f2f3f9",
-  surface: "#eef0f8",
-  surface2: "#e4e7f2",
-  border: "#d8dced",
-  borderSubtle: "#e8eaf5",
+  // ── Backgrounds — warm plaster & linen ─────────────────────────────────────
+  bg: "#faf8f4",
+  bgMuted: "#f3efe8",
+  elevated: "#ffffff",
+  surface: "#f0ebe3",
+  surface2: "#e8e2d8",
+  border: "#ddd5c8",
+  borderSubtle: "#ebe6dc",
 
-  // ── Text — deep charcoal-navy ───────────────────────────────────────────────
-  text: "#0e1020",
-  textSecondary: "#4a5270",
-  textMuted: "#8890b0",
+  // ── Text — warm charcoal ────────────────────────────────────────────────────
+  text: "#1c1916",
+  textSecondary: "#5c564e",
+  textMuted: "#9a9288",
 
-  // ── Primary accent — olive green from app icon ──────────────────────────────
-  sage: "#8b9878",
-  sageDeep: "#5a6451",
-  sageMuted: "rgba(139, 152, 120, 0.12)",
-  sageBorder: "rgba(139, 152, 120, 0.30)",
+  // ── Primary accent — olive from app icon ───────────────────────────────────
+  sage: "#7d8b6a",
+  sageDeep: "#4f5843",
+  sageMuted: "rgba(125, 139, 106, 0.14)",
+  sageBorder: "rgba(125, 139, 106, 0.35)",
 
-  // ── Links ───────────────────────────────────────────────────────────────────
-  link: "#8b9878",
-  linkHover: "#5a6451",
+  // ── Links ──────────────────────────────────────────────────────────────────
+  link: "#7d8b6a",
+  linkHover: "#4f5843",
 
-  // ── Secondary accent — muted moss ───────────────────────────────────────────
-  ice: "#a2ab8e",
+  // ── Secondary accent — soft moss ───────────────────────────────────────────
+  ice: "#a3ad90",
 
-  // ── Danger ──────────────────────────────────────────────────────────────────
-  danger: "#d43838",
-  dangerBg: "rgba(212, 56, 56, 0.08)",
+  // ── Danger ─────────────────────────────────────────────────────────────────
+  danger: "#b83a32",
+  dangerBg: "rgba(184, 58, 50, 0.08)",
 
-  // ── Info / banners ──────────────────────────────────────────────────────────
-  infoBg: "#f0f2fa",
-  infoBorder: "#d8dced",
+  // ── Info / banners ─────────────────────────────────────────────────────────
+  infoBg: "#f3efe8",
+  infoBorder: "#ddd5c8",
 
-  // ── Utilities ───────────────────────────────────────────────────────────────
-  overlay: "rgba(14, 16, 32, 0.85)",
+  // ── Utilities ──────────────────────────────────────────────────────────────
+  overlay: "rgba(28, 25, 22, 0.72)",
   black: "#000000",
   white: "#ffffff",
 } as const;

@@ -20,6 +20,10 @@ type Props = {
   style?: ViewStyle;
 };
 
+/**
+ * Catalogue product sheet — cutout on warm stage, meta below the image.
+ * Distinct from inspiration mood-board tiles.
+ */
 export function FurnitureCard({
   item,
   isSaved,
@@ -29,12 +33,27 @@ export function FurnitureCard({
 }: Props) {
   return (
     <View style={[styles.card, style]}>
-      <Image source={{ uri: item.imageUrl }} style={styles.image} />
+      <View style={styles.stage}>
+        <Image
+          source={item.image ?? { uri: item.imageUrl }}
+          style={styles.image}
+          resizeMode="cover"
+        />
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={isSaved ? "Remove from saved" : "Save item"}
+          onPress={onToggleSave}
+          disabled={saveDisabled}
+          style={[styles.heartBtn, isSaved && styles.heartBtnActive]}
+        >
+          <FontAwesome
+            name={isSaved ? "heart" : "heart-o"}
+            size={15}
+            color={isSaved ? palette.sageDeep : palette.textSecondary}
+          />
+        </Pressable>
+      </View>
 
-      {/* Dark gradient overlay at bottom */}
-      <View style={styles.overlay} />
-
-      {/* Meta overlaid on image */}
       <View style={styles.meta}>
         <Text style={styles.type} numberOfLines={1}>
           {item.type}
@@ -43,21 +62,6 @@ export function FurnitureCard({
           {item.name}
         </Text>
       </View>
-
-      {/* Heart button */}
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={isSaved ? "Remove from saved" : "Save item"}
-        onPress={onToggleSave}
-        disabled={saveDisabled}
-        style={styles.heartBtn}
-      >
-        <FontAwesome
-          name={isSaved ? "heart" : "heart-o"}
-          size={18}
-          color={isSaved ? palette.sage : palette.text}
-        />
-      </Pressable>
     </View>
   );
 }
@@ -68,52 +72,57 @@ const styles = StyleSheet.create({
     margin: 6,
     borderRadius: radius.lg,
     overflow: "hidden",
-    backgroundColor: palette.surface2,
+    backgroundColor: palette.elevated,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: palette.borderSubtle,
+  },
+  stage: {
+    width: "100%",
+    aspectRatio: 1,
+    backgroundColor: palette.surface,
+    alignItems: "center",
+    justifyContent: "center",
+    overflow: "hidden",
   },
   image: {
     width: "100%",
-    aspectRatio: 1,
-    backgroundColor: palette.surface2,
-  },
-  overlay: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: "38%",
-    backgroundColor: "rgba(14, 16, 32, 0.58)",
+    height: "100%",
   },
   meta: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    padding: 10,
-    paddingRight: 38,
+    paddingHorizontal: 12,
+    paddingTop: 10,
     paddingBottom: 12,
+    gap: 3,
   },
   type: {
     fontFamily: fontFamily.sansMedium,
-    color: "rgba(255, 255, 255, 0.65)",
+    color: palette.textMuted,
     fontSize: 10,
     textTransform: "uppercase",
-    letterSpacing: 0.8,
-    marginBottom: 3,
+    letterSpacing: 1.2,
   },
   name: {
-    fontFamily: fontFamily.sansSemiBold,
-    color: palette.white,
-    fontSize: 13,
-    lineHeight: 18,
+    fontFamily: fontFamily.displaySemibold,
+    color: palette.text,
+    fontSize: 17,
+    lineHeight: 22,
+    letterSpacing: -0.2,
   },
   heartBtn: {
     position: "absolute",
     top: 8,
     right: 8,
-    padding: 8,
-    borderRadius: 20,
-    backgroundColor: "rgba(14, 16, 32, 0.55)",
-    borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.15)",
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: palette.elevated,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: palette.border,
+  },
+  heartBtnActive: {
+    backgroundColor: palette.sageMuted,
+    borderColor: palette.sageBorder,
   },
 });

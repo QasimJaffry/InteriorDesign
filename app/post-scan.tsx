@@ -11,6 +11,8 @@ import {
   Text,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { StatusBar } from "expo-status-bar";
 
 import { FurnitureCard } from "@/components/FurnitureCard";
 import { useAuthSession } from "@/contexts/AuthContext";
@@ -73,7 +75,7 @@ function filterInspirationByTypes(
 function InspoCard({ item }: { item: InspirationItem }) {
   return (
     <View style={styles.inspoCard}>
-      <Image source={{ uri: item.url }} style={styles.inspoImage} resizeMode="cover" />
+      <Image source={item.image} style={styles.inspoImage} resizeMode="cover" />
       <View style={styles.inspoOverlay} />
       <View style={styles.inspoMeta}>
         <Text style={styles.inspoStyle}>{item.style}</Text>
@@ -88,6 +90,7 @@ function InspoCard({ item }: { item: InspirationItem }) {
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
 export default function PostScanScreen() {
+  const insets = useSafeAreaInsets();
   const { user } = useAuthSession();
   const params = useLocalSearchParams<{
     detectedType?: string;
@@ -157,7 +160,8 @@ export default function PostScanScreen() {
     : null;
 
   return (
-    <View style={styles.root}>
+    <View style={[styles.root, { paddingTop: Math.max(insets.top, 0) + 20 }]}>
+      <StatusBar style="dark" backgroundColor={palette.bg} />
       {/* Fixed header */}
       <View style={styles.header}>
         <Pressable
@@ -300,7 +304,6 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: palette.bg,
-    paddingTop: 56,
   },
 
   // ── Header ────────────────────────────────────────────────────────────────
@@ -334,11 +337,11 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: fontFamily.displaySemibold,
     color: palette.text,
-    fontSize: 24,
+    fontSize: 28,
     marginBottom: space.md,
     paddingRight: 44,
-    lineHeight: 30,
-    letterSpacing: -0.2,
+    lineHeight: 34,
+    letterSpacing: -0.4,
   },
 
   // Detection chips
@@ -418,38 +421,40 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: "50%",
-    backgroundColor: "rgba(8, 11, 20, 0.6)",
+    height: "42%",
+    backgroundColor: "rgba(28, 25, 22, 0.45)",
   },
   inspoMeta: {
     position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
-    padding: 12,
+    padding: 14,
   },
   inspoStyle: {
-    fontFamily: fontFamily.sansSemiBold,
-    color: "rgba(255, 255, 255, 0.65)",
+    fontFamily: fontFamily.sansMedium,
+    color: "rgba(255, 255, 255, 0.68)",
     fontSize: 9,
     textTransform: "uppercase",
-    letterSpacing: 1.2,
-    marginBottom: 3,
+    letterSpacing: 1.3,
+    marginBottom: 4,
   },
   inspoLabel: {
-    fontFamily: fontFamily.sansSemiBold,
+    fontFamily: fontFamily.displaySemibold,
     color: palette.white,
-    fontSize: 13,
-    lineHeight: 18,
+    fontSize: 17,
+    lineHeight: 22,
+    letterSpacing: -0.2,
   },
 
   // ── Section labels ────────────────────────────────────────────────────────
   sectionLabel: {
-    fontFamily: fontFamily.displayMedium,
+    fontFamily: fontFamily.displaySemibold,
     color: palette.text,
-    fontSize: 19,
+    fontSize: 22,
     marginBottom: 4,
     marginTop: space.xs,
+    letterSpacing: -0.3,
   },
   sectionSub: {
     fontFamily: fontFamily.sans,
@@ -490,9 +495,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    backgroundColor: palette.sageMuted,
+    backgroundColor: palette.elevated,
     borderWidth: 1,
-    borderColor: palette.sageBorder,
+    borderColor: palette.border,
     borderRadius: radius.xl,
     padding: space.md,
     marginTop: space.md,
@@ -508,16 +513,17 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: palette.bg,
+    backgroundColor: palette.surface,
     borderWidth: 1,
-    borderColor: palette.sageBorder,
+    borderColor: palette.borderSubtle,
     alignItems: "center",
     justifyContent: "center",
   },
   arBannerTitle: {
-    fontFamily: fontFamily.sansSemiBold,
+    fontFamily: fontFamily.displaySemibold,
     color: palette.text,
-    fontSize: 15,
+    fontSize: 18,
+    letterSpacing: -0.2,
   },
   arBannerSub: {
     fontFamily: fontFamily.sans,
@@ -547,15 +553,16 @@ const styles = StyleSheet.create({
 
   // ── Bottom CTA ────────────────────────────────────────────────────────────
   primary: {
-    backgroundColor: palette.sage,
+    backgroundColor: palette.text,
     paddingVertical: 16,
-    borderRadius: radius.lg,
+    borderRadius: radius.full,
     alignItems: "center",
     marginTop: space.lg,
   },
   primaryText: {
     fontFamily: fontFamily.sansSemiBold,
     color: palette.bg,
-    fontSize: 16,
+    fontSize: 15,
+    letterSpacing: 0.2,
   },
 });

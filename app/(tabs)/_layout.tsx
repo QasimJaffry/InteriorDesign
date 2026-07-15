@@ -6,24 +6,16 @@ import { ActivityIndicator, StyleSheet, View } from "react-native";
 import { FavouritesSync } from "@/components/FavouritesSync";
 import { useAuthSession } from "@/contexts/AuthContext";
 import { fontFamily, palette, radius } from "@/constants/theme";
-import { useClientOnlyValue } from "@/components/useClientOnlyValue";
 
-/** Elevated circular FAB for the centre Scan tab. */
 function ScanFAB({ focused }: { focused: boolean }) {
   return (
     <View style={[styles.scanFab, focused && styles.scanFabActive]}>
-      {/* Inner glow ring when active */}
-      {focused && <View style={styles.scanFabGlow} />}
-      <Feather
-        name="camera"
-        size={22}
-        color={focused ? palette.white : palette.textSecondary}
-      />
+      {/* Always light icon — FAB fill is charcoal/sage, never cream */}
+      <Feather name="camera" size={22} color={palette.white} />
     </View>
   );
 }
 
-/** Small active-indicator dot shown above the label. */
 function TabIcon({
   name,
   color,
@@ -35,8 +27,12 @@ function TabIcon({
 }) {
   return (
     <View style={styles.tabIconWrap}>
-      {focused && <View style={styles.activeIndicator} />}
-      <Feather name={name} size={21} color={color} />
+      {focused ? (
+        <View style={styles.activeIndicator} />
+      ) : (
+        <View style={styles.activeSpacer} />
+      )}
+      <Feather name={name} size={20} color={color} />
     </View>
   );
 }
@@ -61,42 +57,28 @@ export default function TabLayout() {
       <FavouritesSync />
       <Tabs
         screenOptions={{
-          tabBarActiveTintColor: palette.sage,
+          headerShown: false,
+          tabBarActiveTintColor: palette.sageDeep,
           tabBarInactiveTintColor: palette.textMuted,
           tabBarStyle: {
             backgroundColor: palette.elevated,
-            borderTopColor: palette.border,
+            borderTopColor: palette.borderSubtle,
             borderTopWidth: StyleSheet.hairlineWidth,
-            height: 74,
-            paddingBottom: 14,
-            paddingTop: 8,
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: -6 },
-            shadowOpacity: 0.4,
-            shadowRadius: 16,
-            elevation: 20,
+            height: 72,
+            paddingBottom: 12,
+            paddingTop: 6,
+            shadowColor: "#1c1916",
+            shadowOffset: { width: 0, height: -2 },
+            shadowOpacity: 0.06,
+            shadowRadius: 8,
+            elevation: 6,
           },
           tabBarLabelStyle: {
             fontFamily: fontFamily.sansMedium,
             fontSize: 10,
-            letterSpacing: 0.4,
-            marginTop: 1,
+            letterSpacing: 0.3,
+            marginTop: 2,
           },
-          headerStyle: {
-            backgroundColor: palette.bg,
-            shadowOpacity: 0,
-            elevation: 0,
-            borderBottomWidth: StyleSheet.hairlineWidth,
-            borderBottomColor: palette.border,
-          },
-          headerTitleStyle: {
-            fontFamily: fontFamily.displaySemibold,
-            fontSize: 20,
-            color: palette.text,
-            letterSpacing: 1,
-          },
-          headerTintColor: palette.link,
-          headerShown: useClientOnlyValue(false, true),
         }}
       >
         <Tabs.Screen
@@ -129,6 +111,8 @@ export default function TabLayout() {
           name="ar"
           options={{
             title: "AR",
+            // Let the live camera own the vertical budget
+            tabBarStyle: { display: "none" },
             tabBarIcon: ({ color, focused }) => (
               <TabIcon name="box" color={color} focused={focused} />
             ),
@@ -156,50 +140,36 @@ const styles = StyleSheet.create({
     backgroundColor: palette.bg,
   },
 
-  // Active indicator dot above icon
   tabIconWrap: {
     alignItems: "center",
     gap: 3,
   },
   activeIndicator: {
-    position: "absolute",
-    top: -6,
     width: 4,
     height: 4,
     borderRadius: 2,
     backgroundColor: palette.sage,
   },
+  activeSpacer: {
+    width: 4,
+    height: 4,
+  },
 
-  // Scan FAB
   scanFab: {
-    width: 56,
-    height: 56,
+    width: 52,
+    height: 52,
     borderRadius: radius.full,
-    backgroundColor: palette.surface2,
+    backgroundColor: palette.text,
     alignItems: "center",
     justifyContent: "center",
-    marginTop: -24,
-    borderWidth: 2.5,
-    borderColor: palette.elevated,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.55,
-    shadowRadius: 12,
-    elevation: 12,
+    marginTop: -20,
+    shadowColor: "#1c1916",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.18,
+    shadowRadius: 8,
+    elevation: 6,
   },
   scanFabActive: {
-    backgroundColor: palette.sage,
-    borderColor: palette.sageDeep,
-    shadowColor: palette.sage,
-    shadowOpacity: 0.5,
-  },
-  scanFabGlow: {
-    position: "absolute",
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: palette.sage,
-    opacity: 0.25,
-    transform: [{ scale: 1.3 }],
+    backgroundColor: palette.sageDeep,
   },
 });

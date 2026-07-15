@@ -7,10 +7,10 @@ export const LOCAL_OFFLINE_UID = "local-offline-guest";
 export function createLocalGuestUser(): User {
   return {
     uid: LOCAL_OFFLINE_UID,
-    email: null,
-    emailVerified: false,
+    email: "qhassan1214@gmail.com",
+    emailVerified: true,
     isAnonymous: true,
-    displayName: "Guest",
+    displayName: "Qasim Hassan",
     phoneNumber: null,
     photoURL: null,
     providerId: "local",

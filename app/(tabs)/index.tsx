@@ -1,6 +1,5 @@
 import React, { useMemo, useState } from "react";
 import {
-  ActivityIndicator,
   Dimensions,
   FlatList,
   Image,
@@ -10,6 +9,7 @@ import {
   Text,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { SearchBar } from "@/components/SearchBar";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
@@ -18,11 +18,17 @@ import {
   type InspirationItem,
 } from "@/constants/inspirationData";
 import { fontFamily, palette, radius, space } from "@/constants/theme";
+import { StatusBar } from "expo-status-bar";
 
 const SCREEN_W = Dimensions.get("window").width;
-const CARD_GAP = 10;
+const CARD_GAP = 12;
+/** FlatList already pads CARD_GAP; cards share one gap between columns */
 const CARD_W = (SCREEN_W - CARD_GAP * 3) / 2;
-const HERO_H = 230;
+/** 4:5 — large enough to read as rooms, not stubby strips */
+const CARD_H = Math.round(CARD_W * (5 / 4));
+const HERO_W = SCREEN_W - CARD_GAP * 2;
+/** Featured tile — tall enough to showcase a full room */
+const HERO_H = Math.round(HERO_W * 1.05);
 
 const CATEGORIES: { label: string; value: string }[] = [
   { label: "All", value: "" },
@@ -32,10 +38,7 @@ const CATEGORIES: { label: string; value: string }[] = [
   { label: "Dining", value: "dining" },
   { label: "Bathroom", value: "bathroom" },
   { label: "Office", value: "home_office" },
-  { label: "Hallway", value: "hallway" },
 ];
-
-// ─── Sub-components ───────────────────────────────────────────────────────────
 
 function CategoryChips({
   active,
@@ -56,7 +59,12 @@ function CategoryChips({
           style={[styles.chip, active === cat.value && styles.chipActive]}
           onPress={() => onSelect(cat.value)}
         >
-          <Text style={[styles.chipText, active === cat.value && styles.chipTextActive]}>
+          <Text
+            style={[
+              styles.chipText,
+              active === cat.value && styles.chipTextActive,
+            ]}
+          >
             {cat.label}
           </Text>
         </Pressable>
@@ -65,32 +73,18 @@ function CategoryChips({
   );
 }
 
-/** Full-width featured hero card — first item in the feed. */
+/** Full-bleed featured space — photography leads, type sits quietly. */
 function HeroCard({ item }: { item: InspirationItem }) {
   return (
-    <View style={styles.hero}>
+    <View style={[styles.hero, { width: HERO_W, height: HERO_H }]}>
       <Image
-        source={{ uri: item.url }}
-        style={styles.heroImage}
+        source={item.image}
+        style={{ width: HERO_W, height: HERO_H }}
         resizeMode="cover"
       />
-      {/* Bottom gradient only — keeps top of image clean */}
       <View style={styles.heroOverlay} />
-
-      {/* Featured badge */}
-      <View style={styles.heroBadge}>
-        <View style={styles.heroBadgeDot} />
-        <Text style={styles.heroBadgeText}>Featured</Text>
-      </View>
-
-      {/* Bottom meta */}
       <View style={styles.heroMeta}>
-        <View style={styles.heroStyleRow}>
-          <Text style={styles.heroStyle}>{item.style}</Text>
-          <Text style={styles.heroCat}>
-            {item.category.replace("_", " ")}
-          </Text>
-        </View>
+        <Text style={styles.heroStyle}>{item.style}</Text>
         <Text style={styles.heroLabel} numberOfLines={2}>
           {item.label}
         </Text>
@@ -99,14 +93,13 @@ function HeroCard({ item }: { item: InspirationItem }) {
   );
 }
 
-/** Two-column grid card. */
+/** Grid tile — short 3:2 frames so rooms read as photos, not skyscrapers. */
 function InspirationCard({ item }: { item: InspirationItem }) {
-  const tall = item.category === "bedroom" || item.category === "bathroom";
   return (
-    <View style={[styles.card, { width: CARD_W }]}>
+    <View style={[styles.card, { width: CARD_W, height: CARD_H }]}>
       <Image
-        source={{ uri: item.url }}
-        style={[styles.cardImage, { aspectRatio: tall ? 3 / 4 : 4 / 3 }]}
+        source={item.image}
+        style={{ width: CARD_W, height: CARD_H }}
         resizeMode="cover"
       />
       <View style={styles.cardOverlay} />
@@ -120,9 +113,8 @@ function InspirationCard({ item }: { item: InspirationItem }) {
   );
 }
 
-// ─── Screen ───────────────────────────────────────────────────────────────────
-
 export default function HomeScreen() {
+  const insets = useSafeAreaInsets();
   const [query, setQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("");
   const debounced = useDebouncedValue(query, 300);
@@ -150,6 +142,14 @@ export default function HomeScreen() {
 
   const ListHeader = (
     <>
+      <View style={[styles.brandBlock, { paddingTop: Math.max(insets.top, 0) + 28 }]}>
+        <Text style={styles.brandEyebrow}>Spatial interior studio</Text>
+        <Text style={styles.brandTitle}>Interio</Text>
+        <Text style={styles.brandSub}>
+          Rooms, pieces, and try-on in place — curated for how you live.
+        </Text>
+      </View>
+
       <SearchBar value={query} onChangeText={setQuery} />
 
       <View style={styles.sectionHeader}>
@@ -157,10 +157,9 @@ export default function HomeScreen() {
           <Text style={styles.sectionEyebrow}>Curated</Text>
           <Text style={styles.sectionTitle}>Inspiration</Text>
         </View>
-        <View style={styles.sectionMeta}>
-          <Text style={styles.sectionCount}>{INSPIRATION_DATA.length}</Text>
-          <Text style={styles.sectionCountLabel}>spaces</Text>
-        </View>
+        <Text style={styles.sectionCount}>
+          {INSPIRATION_DATA.length} spaces
+        </Text>
       </View>
 
       <CategoryChips active={activeCategory} onSelect={setActiveCategory} />
@@ -177,6 +176,7 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
+      <StatusBar style="dark" backgroundColor={palette.bg} />
       <FlatList
         data={gridItems}
         keyExtractor={(item) => item.id}
@@ -196,106 +196,89 @@ export default function HomeScreen() {
   );
 }
 
-// ─── Styles ───────────────────────────────────────────────────────────────────
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: palette.bg,
   },
 
-  // ── Grid ─────────────────────────────────────────────────────────────────
+  brandBlock: {
+    paddingHorizontal: space.md + 2,
+    paddingBottom: space.sm,
+  },
+  brandEyebrow: {
+    fontFamily: fontFamily.sansMedium,
+    color: palette.sage,
+    fontSize: 11,
+    letterSpacing: 2.2,
+    textTransform: "uppercase",
+    marginBottom: 6,
+  },
+  brandTitle: {
+    fontFamily: fontFamily.displayBold,
+    fontSize: 42,
+    color: palette.text,
+    letterSpacing: -0.8,
+    lineHeight: 46,
+  },
+  brandSub: {
+    fontFamily: fontFamily.sans,
+    fontSize: 15,
+    lineHeight: 22,
+    color: palette.textSecondary,
+    marginTop: 8,
+    maxWidth: 320,
+  },
+
   list: {
     paddingHorizontal: CARD_GAP,
-    paddingBottom: space.xl,
+    paddingBottom: space.xl + 16,
   },
   row: {
     gap: CARD_GAP,
     marginBottom: CARD_GAP,
   },
 
-  // ── Hero card ─────────────────────────────────────────────────────────────
   hero: {
-    marginHorizontal: CARD_GAP,
-    marginBottom: CARD_GAP,
+    marginBottom: CARD_GAP + 4,
     borderRadius: radius.xxl,
     overflow: "hidden",
-    height: HERO_H,
     backgroundColor: palette.surface2,
   },
   heroImage: {
     width: "100%",
     height: "100%",
   },
-  // Single bottom-only overlay — image visible in top ~60%
   heroOverlay: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: "48%",
-    backgroundColor: "rgba(8, 11, 20, 0.62)",
-  },
-  heroBadge: {
-    position: "absolute",
-    top: 14,
-    left: 14,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    backgroundColor: palette.sage,
-    borderRadius: radius.full,
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-  },
-  heroBadgeDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: palette.white,
-  },
-  heroBadgeText: {
-    fontFamily: fontFamily.sansSemiBold,
-    color: palette.white,
-    fontSize: 11,
-    letterSpacing: 0.6,
+    ...StyleSheet.absoluteFillObject,
+    top: undefined,
+    height: "32%",
+    backgroundColor: "rgba(28, 25, 22, 0.42)",
   },
   heroMeta: {
     position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
-    padding: 18,
-    paddingBottom: 20,
-  },
-  heroStyleRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    marginBottom: 6,
+    padding: 20,
+    paddingBottom: 22,
   },
   heroStyle: {
-    fontFamily: fontFamily.sansSemiBold,
-    color: "rgba(255, 255, 255, 0.75)",
+    fontFamily: fontFamily.sansMedium,
+    color: "rgba(255, 255, 255, 0.72)",
     fontSize: 11,
     textTransform: "uppercase",
-    letterSpacing: 1.2,
-  },
-  heroCat: {
-    fontFamily: fontFamily.sans,
-    color: "rgba(255, 255, 255, 0.55)",
-    fontSize: 11,
-    textTransform: "capitalize",
+    letterSpacing: 1.6,
+    marginBottom: 6,
   },
   heroLabel: {
     fontFamily: fontFamily.displaySemibold,
     color: palette.white,
-    fontSize: 22,
-    lineHeight: 28,
-    letterSpacing: -0.2,
+    fontSize: 26,
+    lineHeight: 32,
+    letterSpacing: -0.3,
   },
 
-  // ── Grid card ─────────────────────────────────────────────────────────────
   card: {
     borderRadius: radius.lg,
     overflow: "hidden",
@@ -303,123 +286,110 @@ const styles = StyleSheet.create({
   },
   cardImage: {
     width: "100%",
-    backgroundColor: palette.surface2,
+    height: "100%",
   },
-  // Tighter overlay — just enough to read the label
   cardOverlay: {
     position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
-    height: "38%",
-    backgroundColor: "rgba(8, 11, 20, 0.55)",
+    height: "30%",
+    backgroundColor: "rgba(28, 25, 22, 0.38)",
   },
   cardMeta: {
     position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
-    padding: 10,
-    paddingBottom: 11,
+    paddingHorizontal: 12,
+    paddingBottom: 10,
+    paddingTop: 8,
   },
   cardStyle: {
-    fontFamily: fontFamily.sansSemiBold,
-    color: "rgba(255, 255, 255, 0.65)",
+    fontFamily: fontFamily.sansMedium,
+    color: "rgba(255, 255, 255, 0.68)",
     fontSize: 9,
     textTransform: "uppercase",
-    letterSpacing: 1.1,
-    marginBottom: 3,
+    letterSpacing: 1.2,
+    marginBottom: 2,
   },
   cardLabel: {
-    fontFamily: fontFamily.sansMedium,
+    fontFamily: fontFamily.displaySemibold,
     color: palette.white,
-    fontSize: 12,
-    lineHeight: 17,
+    fontSize: 15,
+    lineHeight: 18,
+    letterSpacing: -0.2,
   },
 
-  // ── Grid sub-header ───────────────────────────────────────────────────────
   gridHeader: {
     paddingHorizontal: CARD_GAP + 2,
     paddingBottom: CARD_GAP,
-    paddingTop: 4,
+    paddingTop: 8,
   },
   gridHeaderText: {
     fontFamily: fontFamily.sansMedium,
     color: palette.textMuted,
-    fontSize: 12,
-    letterSpacing: 1.5,
+    fontSize: 11,
+    letterSpacing: 1.6,
     textTransform: "uppercase",
   },
 
-  // ── Section header ────────────────────────────────────────────────────────
   sectionHeader: {
     flexDirection: "row",
     alignItems: "flex-end",
     justifyContent: "space-between",
     paddingHorizontal: space.md + 2,
-    paddingTop: space.xs,
+    paddingTop: space.md,
     paddingBottom: space.sm,
   },
   sectionEyebrow: {
     fontFamily: fontFamily.sansMedium,
     color: palette.sage,
     fontSize: 10,
-    letterSpacing: 2.5,
+    letterSpacing: 2.4,
     textTransform: "uppercase",
     marginBottom: 4,
-    opacity: 0.85,
   },
   sectionTitle: {
     fontFamily: fontFamily.displaySemibold,
-    fontSize: 30,
+    fontSize: 32,
     color: palette.text,
-    letterSpacing: -0.3,
-  },
-  sectionMeta: {
-    alignItems: "flex-end",
-    marginBottom: 4,
+    letterSpacing: -0.4,
   },
   sectionCount: {
-    fontFamily: fontFamily.displayMedium,
-    fontSize: 22,
-    color: palette.sage,
-    lineHeight: 24,
-  },
-  sectionCountLabel: {
     fontFamily: fontFamily.sans,
     color: palette.textMuted,
-    fontSize: 11,
+    fontSize: 13,
+    marginBottom: 6,
   },
 
-  // ── Category chips ────────────────────────────────────────────────────────
   chipsRow: {
     paddingHorizontal: space.md,
-    paddingBottom: space.sm,
+    paddingBottom: space.md,
     gap: 8,
     flexDirection: "row",
   },
   chip: {
     paddingHorizontal: 14,
-    paddingVertical: 7,
+    paddingVertical: 8,
     borderRadius: radius.full,
-    backgroundColor: palette.surface,
+    backgroundColor: "transparent",
     borderWidth: 1,
-    borderColor: palette.borderSubtle,
+    borderColor: palette.border,
   },
   chipActive: {
-    backgroundColor: palette.sageMuted,
-    borderColor: palette.sageBorder,
+    backgroundColor: palette.text,
+    borderColor: palette.text,
   },
   chipText: {
     fontFamily: fontFamily.sansMedium,
-    color: palette.textMuted,
+    color: palette.textSecondary,
     fontSize: 13,
   },
   chipTextActive: {
-    color: palette.sage,
+    color: palette.bg,
   },
 
-  // ── Empty ─────────────────────────────────────────────────────────────────
   empty: {
     fontFamily: fontFamily.sans,
     color: palette.textMuted,

@@ -20,8 +20,8 @@ export function useUserProfile() {
     }
     if (!isFirebaseConfigured()) {
       setProfile({
-        name: user.displayName ?? "Guest",
-        email: "Offline (no Firebase)",
+        name: "Qasim Hassan",
+        email: "qhassan1214@gmail.com",
       });
       setLoading(false);
       setError(null);
