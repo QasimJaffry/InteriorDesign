@@ -1,17 +1,19 @@
-# INTERIO
+# Interio
 
-An AI-powered interior design app built with React Native and Expo. Point your camera at a room, identify furniture with on-device machine learning, and visualise new pieces in augmented reality before you buy.
+Scan a room, detect furniture **on-device**, and place true-scale pieces in **AR** before you buy.
+
+Started as a university FYP; still iterated as a React Native / Expo app. GitHub repo: `InteriorDesign`.
 
 ---
 
 ## Features
 
-- **AI Furniture Scanning** — Capture a single photo and ML Kit's object detection model identifies the furniture category on-device. No server round-trip required.
-- **Augmented Reality Placement** — Place true-to-scale 3D furniture models anywhere in your room. Drag to reposition, pinch to scale, and twist to rotate each piece freely.
-- **Furniture Catalogue** — Browse and search a full catalogue with category filtering driven by your last scan result.
-- **Saved Items** — Favourite pieces sync to your account via Firestore and persist locally when offline.
-- **Authentication** — Email/password sign-up, login, and password reset via Firebase Auth.
-- **Offline Support** — Scan results and saved items are stored locally with AsyncStorage so the app works without a network connection.
+- **On-device furniture scan** — ML Kit object detection on a single photo (no server round-trip for classification)
+- **AR placement** — true-scale GLB models via ViroReact; drag, pinch, twist
+- **Catalogue** — browse / search with category filter from the last scan
+- **Saved items** — favourites in Firestore; local cache when offline
+- **Auth** — email/password via Firebase Auth
+- **Offline** — scan results and saves via AsyncStorage + file system
 
 ---
 
@@ -19,15 +21,13 @@ An AI-powered interior design app built with React Native and Expo. Point your c
 
 | Layer | Technology |
 |---|---|
-| Framework | [Expo](https://expo.dev) SDK 53 · Expo Router (file-based routing) |
-| Language | TypeScript (strict) |
-| UI | React Native 0.79 |
-| State management | [Zustand](https://github.com/pmndrs/zustand) |
-| Backend | Firebase — Firestore + Authentication |
-| On-device ML | [ML Kit Object Detection](https://github.com/infinitered/react-native-mlkit) (`@infinitered/react-native-mlkit-object-detection`) |
-| Augmented reality | [ViroReact](https://github.com/ReactVision/react-viro) (`@reactvision/react-viro`) |
+| Framework | Expo **SDK 53** · Expo Router · React Native **0.79** · TypeScript |
+| State | Zustand |
+| Backend | Firebase Auth · Firestore |
+| On-device ML | `@infinitered/react-native-mlkit-object-detection` (ML Kit) |
+| AR | `@reactvision/react-viro` (ViroReact) |
 | Camera | `expo-camera` |
-| Offline storage | `@react-native-async-storage/async-storage` + `expo-file-system` |
+| Offline | AsyncStorage · `expo-file-system` |
 
 ---
 
